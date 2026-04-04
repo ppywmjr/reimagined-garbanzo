@@ -1,34 +1,37 @@
-const { PostgreSqlContainer } = require('@testcontainers/postgresql');
-const request = require('supertest');
-const path = require('path');
-const fs = require('fs');
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
+import request from 'supertest';
+import { execSync } from 'child_process';
+import app from '../../src/app';
+import { getPrismaClient, disconnectPrisma } from '../../src/lib/prisma';
 
-let container;
-let app;
-let db;
+let container: StartedPostgreSqlContainer;
 
 beforeAll(async () => {
   container = await new PostgreSqlContainer('postgres:16').start();
 
-  // Set DATABASE_URL before any app modules are required so the lazy pool
-  // picks up the test container connection string
+  // Set DATABASE_URL before any Prisma call so the lazy singleton picks up
+  // the test container connection string on first use.
   process.env.DATABASE_URL = container.getConnectionUri();
 
-  // Reset module cache so all requires below load fresh instances that use
-  // the DATABASE_URL we just set
-  jest.resetModules();
-  app = require('../../app');
-  db = require('../../db/client');
+  // Apply migrations to the test container — this keeps the schema in sync
+  // with the actual migration history rather than a separate SQL file.
+  execSync('npx prisma migrate deploy', {
+    env: { ...process.env, DATABASE_URL: container.getConnectionUri() },
+  });
 
-  const schema = fs.readFileSync(
-    path.join(__dirname, '../../db/schema.sql/init.sql'),
-    'utf8'
-  );
-  await db.query(schema);
+  // Seed the test database via Prisma so the data matches the seed script.
+  await getPrismaClient().user.createMany({
+    data: [
+      { clerkUserId: 'clerk_user_alice',   email: 'alice@prisma.io',   displayName: 'Alice' },
+      { clerkUserId: 'clerk_user_nilu',    email: 'nilu@prisma.io',    displayName: 'Nilu' },
+      { clerkUserId: 'clerk_user_mahmoud', email: 'mahmoud@prisma.io', displayName: 'Mahmoud' },
+    ],
+  });
 }, 60_000);
 
 afterAll(async () => {
-  await db.end();
+  await getPrismaClient().user.deleteMany();
+  await disconnectPrisma();
   await container.stop();
 });
 
@@ -59,11 +62,12 @@ describe('GET /users', () => {
 });
 
 describe('GET /users/:id', () => {
-  let existingUserId;
+  let existingUserId: string;
 
   beforeAll(async () => {
-    const result = await db.query('SELECT id FROM users LIMIT 1');
-    existingUserId = result.rows[0].id;
+    const user = await getPrismaClient().user.findFirst();
+    if (!user) throw new Error('No seed data found — check db/schema.sql/init.sql');
+    existingUserId = user.id;
   });
 
   it('returns 200 with the correct user for a valid existing ID', async () => {
@@ -73,7 +77,7 @@ describe('GET /users/:id', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.data).toMatchObject({
       id: existingUserId,
-      clerk_user_id: expect.any(String),
+      clerkUserId: expect.any(String),
       email: expect.any(String),
     });
   });

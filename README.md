@@ -1,85 +1,99 @@
 # Subscription Management
 
-A Node.js/Express API for managing users and their subscriptions, backed by PostgreSQL.
+An Express + Prisma API with PostgreSQL, structured in layers (routes → services → db).
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) v20+
-- [Docker](https://www.docker.com/) (for local development database)
-- [npm](https://npmjs.com/)
+- Node.js 22+
+- Docker (for the local PostgreSQL instance)
+- A `.env` file with `DATABASE_URL` set, e.g.:
+  ```
+  DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+  ```
 
-## Getting Started
-
-### 1. Clone the repo
-
-```bash
-git clone https://github.com/ppywmjr/reimagined-garbanzo.git
-cd reimagined-garbanzo
-```
-
-### 2. Install dependencies
+## Getting started
 
 ```bash
+# Start the database
+docker compose up -d
+
+# Install dependencies
 npm ci
+
+# Seed the database with sample data
+npx prisma db seed
+
+# Start the development server
+npm run dev
 ```
 
-### 3. Configure environment
+## Working with Prisma
+
+### Changing the schema
+
+Edit `prisma/schema.prisma`, then:
 
 ```bash
-cp .env.example .env
+# Create a migration and apply it to the local database
+# Also regenerates the Prisma client automatically
+npx prisma migrate dev --name <short-description>
 ```
 
-Edit `.env` if you need to change any defaults (the defaults match the Docker Compose setup).
-
-### 4. Start the database
+### Regenerating the client only (no schema change)
 
 ```bash
-docker compose up
+npx prisma generate
 ```
 
-This starts a PostgreSQL 16 instance on port `5432` and automatically creates the `users` table with seed data on first run.
-
-> **Note:** If you need to reset the database (e.g. to re-run initialisation), stop the container and remove the volume:
-> ```bash
-> docker compose down && docker volume rm subscription-managent_pgdata
-> ```
-
-### 5. Start the app
+### Seeding the database
 
 ```bash
-npm start
+npx prisma db seed
 ```
 
-The API is now available at `http://localhost:3000`.
+The seed script lives at `prisma/seed.ts` and is configured via the `prisma.seed` field in `package.json`.
 
-## API
+### Resetting the local database
 
-See [API.md](API.md) for full endpoint documentation.
-
-### Quick reference
-
-| Method | Path         | Description               |
-|--------|--------------|---------------------------|
-| GET    | `/users`     | List all users (paginated) |
-| GET    | `/users/:id` | Get a single user by UUID  |
-
-## Running Tests
-
-Integration tests spin up a real PostgreSQL container automatically — no manual setup needed:
+Drops all tables, re-runs all migrations, and re-seeds:
 
 ```bash
-npm test
+npx prisma migrate reset
 ```
 
-## Environment Variables
+> **Warning:** never run this against a production database.
 
-| Variable       | Default       | Description                                         |
-|----------------|---------------|-----------------------------------------------------|
-| `DATABASE_URL` | —             | Full connection string (overrides individual fields) |
-| `DB_USER`      | `dev`         | PostgreSQL username                                 |
-| `DB_PASSWORD`  | `dev`         | PostgreSQL password                                 |
-| `DB_HOST`      | `localhost`   | PostgreSQL host                                     |
-| `DB_PORT`      | `5432`        | PostgreSQL port                                     |
-| `DB_NAME`      | `myapp`       | PostgreSQL database name                            |
-| `NODE_ENV`     | `development` | Application environment                             |
-| `PORT`         | `3000`        | HTTP server port                                    |
+### Inspecting the database
+
+```bash
+npx prisma studio
+```
+
+Opens a browser-based GUI at `http://localhost:5555`.
+
+### Migrations in production
+
+```bash
+npx prisma migrate deploy
+```
+
+Applies any pending migrations without prompting. Run this in your CI/CD pipeline. Never delete the `prisma/migrations` folder after changes have been deployed to production.
+
+## Project structure
+
+```
+prisma/
+  schema.prisma        # Data models
+  seed.ts              # Seed script
+  migrations/          # Migration history — commit this to git
+  generated/           # Generated Prisma client — do not edit manually
+src/
+  index.ts             # Express app entry point
+  db.ts                # Prisma client singleton
+  routes/
+    userRoutes.ts      # User endpoints
+    postRoutes.ts      # Post endpoints
+  services/
+    userService.ts     # User business logic / DB queries
+    postService.ts     # Post business logic / DB queries
+```
