@@ -1,19 +1,27 @@
 import { Router } from 'express'
+import { z } from 'zod'
 import * as userService from '../services/userService.js'
+import { paginationSchema } from '../lib/validate.js'
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const CreateUserBody = z.object({
+  clerkUserId: z.string().min(1),
+  email: z.email(),
+  displayName: z.string().max(100).optional(),
+})
 
 const router = Router()
 
 router.post('/signup', async (req, res) => {
-  const { clerkUserId, email, displayName } = req.body
-  const result = await userService.createUser({ clerkUserId, email, displayName })
+  const parse = CreateUserBody.safeParse(req.body)
+  if (!parse.success) {
+    return res.status(400).json({ success: false, error: parse.error.issues[0].message })
+  }
+  const result = await userService.createUser(parse.data)
   res.json({ success: true, data: result })
 })
 
 router.get('/users', async (req, res) => {
-  const limit = Math.min(Number(req.query.limit) || 20, 100)
-  const offset = Number(req.query.offset) || 0
+  const { limit, offset } = paginationSchema.parse(req.query)
   const { users, total } = await userService.getAllUsers(limit, offset)
   res.json({
     success: true,
@@ -23,10 +31,11 @@ router.get('/users', async (req, res) => {
 })
 
 router.get('/users/:id', async (req, res) => {
-  if (!UUID_RE.test(req.params.id)) {
+  const parse = z.uuid().safeParse(req.params.id)
+  if (!parse.success) {
     return res.status(400).json({ success: false, error: 'Invalid user ID format' })
   }
-  const user = await userService.getUserById(req.params.id)
+  const user = await userService.getUserById(parse.data)
   if (!user) return res.status(404).json({ success: false, error: 'User not found' })
   res.json({ success: true, data: user })
 })
