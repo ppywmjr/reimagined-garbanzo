@@ -1,0 +1,13 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "secrets": ["DATABASE_URL"],
+  "steps": {
+    "build": {
+      "secrets": ["*"],
+      "commands": ["npm run build:railpack"]
+    }
+  },
+  "deploy": {
+    "startCommand": "npm start"
+  }
+}
