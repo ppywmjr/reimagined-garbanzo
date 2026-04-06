@@ -5,8 +5,10 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsx src/index.ts",
-    "clean": "rm -rf dist && rm -rf prisma/generated",
-    "build": "npm run clean && npx prisma generate && tsup",
+    "clean": "rm -rf dist",
+    "clean:railpack": "rm -rf dist && rm -rf prisma/generated",
+    "build": "npm run clean && tsup",
+    "build:railpack": "npm run clean:railpack && npx prisma generate && tsup",
     "start": "node dist/index.cjs",
     "test": "vitest run"
   },
