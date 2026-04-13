@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import * as subscriptionService from '../services/subscriptionService.js'
 import { paginationSchema } from '../lib/validate.js'
+import { getAuth } from '@clerk/express'
 
 const CreateSubscriptionBody = z.object({
   userId: z.uuid(),
@@ -43,6 +44,12 @@ router.get('/subscriptions', async (req, res) => {
 
 router.get('/subscriptions/flutters/videos', async (req, res) => {
   const { limit, offset } = paginationSchema.parse(req.query)
+  const { userId, isAuthenticated } = getAuth(req)
+  if (!isAuthenticated || !userId) {
+    return res.status(401).json({ success: false, error: 'Unauthorized' })
+  }
+
+  console.log('Fetched user from Clerk:', userId);
   const { videos, total } = await subscriptionService.getFluttersVideos(limit, offset)
 
   res.json({
