@@ -41,6 +41,17 @@ router.get('/subscriptions', async (req, res) => {
   })
 })
 
+router.get('/subscriptions/flutters/videos', async (req, res) => {
+  const { limit, offset } = paginationSchema.parse(req.query)
+  const { videos, total } = await subscriptionService.getFluttersVideos(limit, offset)
+
+  res.json({
+    success: true,
+    data: videos,
+    pagination: { total, limit, offset, hasMore: offset + videos.length < total },
+  })
+})
+
 router.get('/subscriptions/:id', async (req, res) => {
   const parse = z.uuid().safeParse(req.params.id)
   if (!parse.success) {
