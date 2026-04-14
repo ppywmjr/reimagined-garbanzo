@@ -27,7 +27,6 @@ const validPlan = {
   billingInterval: 'month',
   pricePence: 999,
   isActive: true,
-  features: { hd_access: true, max_devices: 2 },
 };
 
 describe('POST /plans', () => {

@@ -8,7 +8,6 @@ export async function createPlan(data: {
   billingInterval: BillingInterval
   pricePence: number
   isActive: boolean
-  features: object
 }) {
   return getPrismaClient().plan.create({ data })
 }

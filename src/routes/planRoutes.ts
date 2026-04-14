@@ -10,7 +10,6 @@ const CreatePlanBody = z.object({
   billingInterval: z.enum(['month', 'year']),
   pricePence: z.number().int().nonnegative(),
   isActive: z.boolean().default(true),
-  features: z.looseObject({}).default({}),
 })
 
 const router = Router()
