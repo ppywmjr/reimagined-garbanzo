@@ -7,7 +7,7 @@ const prisma = new PrismaClient({ adapter: pool })
 const VIDEO_IDS = {
   taylor:   'b3f4a2e1-0c5d-4f6e-8a7b-9c0d1e2f3a4b',
   singular: 'c4e5b3f2-1d6e-5a7f-9b8c-0d1e2f3a4b5c',
-  sigil:    'd5f6c4a3-2e7f-6b8a-0c9d-1e2f3a4b5c6d',
+  sigil:    'acbeb338-03a4-4536-9027-54423e13eea9',
 }
 
 async function main() {

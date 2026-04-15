@@ -55,7 +55,7 @@ The seed script lives at `prisma/seed.ts` and is configured via the `prisma.seed
 
 ### Resetting the local database
 
-Drops all tables, re-runs all migrations, and re-seeds:
+Drops all tables, re-runs all migrations:
 
 ```bash
 npx prisma migrate reset
