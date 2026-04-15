@@ -3,7 +3,17 @@ import { z } from 'zod'
 import { getAuth } from '@clerk/express'
 import * as courseService from '../services/courseService.js'
 import * as userCoursesService from '../services/userCoursesService.js'
+import * as userVideoService from '../services/userVideoService.js'
 import { paginationSchema } from '../lib/validate.js'
+
+const progressBodySchema = z
+  .object({
+    watched: z.boolean().optional(),
+    progressSecs: z.number().int().min(0).optional(),
+  })
+  .refine((d) => d.watched !== undefined || d.progressSecs !== undefined, {
+    message: 'At least one of watched or progressSecs must be provided',
+  })
 
 const router = Router()
 
@@ -66,6 +76,31 @@ router.get('/me/courses/:id/videos/:videoId', async (req, res) => {
     return res.status(404).json({ success: false, error: 'Video not found' })
   }
   res.json({ success: true, data: video })
+})
+
+router.post('/me/courses/:id/videos/:videoId/progress', async (req, res) => {
+  const parseCourseId = z.uuid().safeParse(req.params.id)
+  if (!parseCourseId.success) {
+    return res.status(400).json({ success: false, error: 'Invalid course ID format' })
+  }
+  const parseVideoId = z.uuid().safeParse(req.params.videoId)
+  if (!parseVideoId.success) {
+    return res.status(400).json({ success: false, error: 'Invalid video ID format' })
+  }
+  const parseBody = progressBodySchema.safeParse(req.body)
+  if (!parseBody.success) {
+    return res.status(400).json({ success: false, error: parseBody.error.issues[0]?.message ?? 'Invalid request body' })
+  }
+  const { userId } = getAuth(req)
+  const hasAccess = await userCoursesService.userHasAccessToCourse(userId!, parseCourseId.data)
+  if (!hasAccess) {
+    return res.status(403).json({ success: false, error: 'Forbidden' })
+  }
+  const progress = await userVideoService.upsertVideoProgress(userId!, parseCourseId.data, parseVideoId.data, parseBody.data)
+  if (!progress) {
+    return res.status(404).json({ success: false, error: 'Video not found' })
+  }
+  res.json({ success: true, data: progress })
 })
 
 export default router

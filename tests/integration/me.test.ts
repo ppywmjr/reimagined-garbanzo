@@ -220,3 +220,101 @@ describe('GET /me/courses/:id/videos/:videoId', () => {
     expect(res.body.error).toBe('Invalid course ID format');
   });
 });
+
+describe('POST /me/courses/:id/videos/:videoId/progress', () => {
+  it('creates a new progress entry and returns it', async () => {
+    const res = await request(app)
+      .post(`/me/courses/${courseId}/videos/${videoId3}/progress`)
+      .send({ watched: true, progressSecs: 42 });
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toMatchObject({ videoId: videoId3, watched: true, progressSecs: 42 });
+    expect(res.body.data.updatedAt).toBeDefined();
+  });
+
+  it('updates an existing progress entry', async () => {
+    const res = await request(app)
+      .post(`/me/courses/${courseId}/videos/${videoId3}/progress`)
+      .send({ watched: false, progressSecs: 99 });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ videoId: videoId3, watched: false, progressSecs: 99 });
+  });
+
+  it('accepts a partial update with only watched', async () => {
+    const res = await request(app)
+      .post(`/me/courses/${courseId}/videos/${videoId1}/progress`)
+      .send({ watched: false });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ videoId: videoId1, watched: false });
+  });
+
+  it('accepts a partial update with only progressSecs', async () => {
+    const res = await request(app)
+      .post(`/me/courses/${courseId}/videos/${videoId2}/progress`)
+      .send({ progressSecs: 200 });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ videoId: videoId2, progressSecs: 200 });
+  });
+
+  it('returns 400 when body has no valid fields', async () => {
+    const res = await request(app)
+      .post(`/me/courses/${courseId}/videos/${videoId1}/progress`)
+      .send({});
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('returns 400 for wrong field types', async () => {
+    const res = await request(app)
+      .post(`/me/courses/${courseId}/videos/${videoId1}/progress`)
+      .send({ watched: 'yes', progressSecs: -5 });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+  });
+
+  it('returns 403 if user has no active subscription to the course', async () => {
+    const res = await request(app)
+      .post(`/me/courses/${unsubscribedCourseId}/videos/${videoId1}/progress`)
+      .send({ watched: true });
+
+    expect(res.status).toBe(403);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Forbidden');
+  });
+
+  it('returns 404 if the video does not exist in the course', async () => {
+    const res = await request(app)
+      .post(`/me/courses/${courseId}/videos/${randomUUID()}/progress`)
+      .send({ watched: true });
+
+    expect(res.status).toBe(404);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Video not found');
+  });
+
+  it('returns 400 for an invalid video UUID', async () => {
+    const res = await request(app)
+      .post(`/me/courses/${courseId}/videos/not-a-uuid/progress`)
+      .send({ watched: true });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Invalid video ID format');
+  });
+
+  it('returns 400 for an invalid course UUID', async () => {
+    const res = await request(app)
+      .post(`/me/courses/not-a-uuid/videos/${randomUUID()}/progress`)
+      .send({ watched: true });
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Invalid course ID format');
+  });
+});
