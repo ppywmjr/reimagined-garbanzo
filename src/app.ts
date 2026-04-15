@@ -5,10 +5,15 @@ import courseRoutes from './routes/courseRoutes.js'
 import meRoutes from './routes/meRoutes.js'
 import webhookEventRoutes from './routes/webhookEventRoutes.js'
 import { clerkMiddleware } from '@clerk/express'
+import { internalApiKey } from './middleware/internalApiKey.js'
 
 const app = express()
 
+// Any raw-body route (e.g. Stripe webhook) must be registered here,
+// before express.json() and before internalApiKey.
+
 app.use(express.json({ limit: '100kb' }))
+app.use(internalApiKey)
 app.use(clerkMiddleware())
 app.use(userRoutes)
 app.use(planRoutes)

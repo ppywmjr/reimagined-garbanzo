@@ -8,10 +8,9 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "noEmit": true,
-    "baseUrl": ".",
     "types": ["vitest/globals"],
     "paths": {
-      "@testcontainers/postgresql": ["node_modules/@testcontainers/postgresql/build/index.d.ts"]
+      "@testcontainers/postgresql": ["./node_modules/@testcontainers/postgresql/build/index.d.ts"]
     }
   }
 }
