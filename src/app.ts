@@ -3,7 +3,6 @@ import userRoutes from './routes/userRoutes.js'
 import planRoutes from './routes/planRoutes.js'
 import courseRoutes from './routes/courseRoutes.js'
 import meRoutes from './routes/meRoutes.js'
-import webhookEventRoutes from './routes/webhookEventRoutes.js'
 import { clerkMiddleware } from '@clerk/express'
 import { internalApiKey } from './middleware/internalApiKey.js'
 
@@ -19,6 +18,5 @@ app.use(userRoutes)
 app.use(planRoutes)
 app.use(courseRoutes)
 app.use(meRoutes)
-app.use(webhookEventRoutes)
 
 export default app
