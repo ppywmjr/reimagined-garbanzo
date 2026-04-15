@@ -39,3 +39,6 @@ User
 
 - Use `async/await` throughout — no `.then()` chains.
 - Route handlers should not contain try/catch unless the error response differs per route.
+
+## Routes
+All values sent in an http request body and path should be safeParsed by zod. 

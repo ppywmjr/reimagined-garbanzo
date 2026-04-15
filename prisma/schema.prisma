@@ -90,7 +90,7 @@ model PlanCourse {
 }
 
 model Video {
-  id            String              @id
+  id            String              @id @default(uuid()) @db.Uuid
   title         String              @map("title")
   url           String              @map("url")
   thumbnail     String              @map("thumbnail")
@@ -104,7 +104,7 @@ model Video {
 
 model CourseVideo {
   courseId  String   @map("course_id") @db.Uuid
-  videoId   String   @map("video_id")
+  videoId   String   @map("video_id") @db.Uuid
   position  Int      @map("position")
   course    Course   @relation(fields: [courseId], references: [id])
   video     Video    @relation(fields: [videoId], references: [id])
@@ -115,7 +115,7 @@ model CourseVideo {
 
 model UserVideoProgress {
   userId        String   @map("user_id") @db.Uuid
-  videoId       String   @map("video_id")
+  videoId       String   @map("video_id") @db.Uuid
   watched       Boolean  @default(false) @map("watched")
   progressSecs  Int     @default(0) @map("progress_secs")
   updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
