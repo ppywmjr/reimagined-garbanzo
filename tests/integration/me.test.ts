@@ -1,12 +1,16 @@
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { request } from '../helpers/api';
 import { execSync } from 'child_process';
+import { randomUUID } from 'crypto';
 import app from '../../src/app';
 import { getPrismaClient, disconnectPrisma } from '../../src/lib/prisma';
 
 let container: StartedPostgreSqlContainer;
 let courseId: string;
 let unsubscribedCourseId: string;
+let videoId1: string;
+let videoId2: string;
+let videoId3: string;
 
 beforeAll(async () => {
   container = await new PostgreSqlContainer('postgres:16').start();
@@ -20,11 +24,15 @@ beforeAll(async () => {
     data: { clerkUserId: 'user_test_clerk_123', email: 'meuser@test.com' },
   });
 
+  videoId1 = randomUUID();
+  videoId2 = randomUUID();
+  videoId3 = randomUUID();
+
   await getPrismaClient().video.createMany({
     data: [
-      { id: 'v1', title: 'Video One',   url: 'https://example.com/v1', thumbnail: 'https://example.com/v1.jpg' },
-      { id: 'v2', title: 'Video Two',   url: 'https://example.com/v2', thumbnail: 'https://example.com/v2.jpg' },
-      { id: 'v3', title: 'Video Three', url: 'https://example.com/v3', thumbnail: 'https://example.com/v3.jpg' },
+      { id: videoId1, title: 'Video One',   url: 'https://example.com/v1', thumbnail: 'https://example.com/v1.jpg' },
+      { id: videoId2, title: 'Video Two',   url: 'https://example.com/v2', thumbnail: 'https://example.com/v2.jpg' },
+      { id: videoId3, title: 'Video Three', url: 'https://example.com/v3', thumbnail: 'https://example.com/v3.jpg' },
     ],
   });
 
@@ -40,9 +48,9 @@ beforeAll(async () => {
 
   await getPrismaClient().courseVideo.createMany({
     data: [
-      { courseId, videoId: 'v1', position: 1 },
-      { courseId, videoId: 'v2', position: 2 },
-      { courseId, videoId: 'v3', position: 3 },
+      { courseId, videoId: videoId1, position: 1 },
+      { courseId, videoId: videoId2, position: 2 },
+      { courseId, videoId: videoId3, position: 3 },
     ],
   });
 
@@ -56,11 +64,11 @@ beforeAll(async () => {
     data: { userId: user.id, planId: plan.id, status: 'active' },
   });
 
-  // v1: watched, v2: in-progress, v3: no entry (defaults to unwatched/0)
+  // videoId1: watched, videoId2: in-progress, videoId3: no entry (defaults to unwatched/0)
   await getPrismaClient().userVideoProgress.createMany({
     data: [
-      { userId: user.id, videoId: 'v1', watched: true,  progressSecs: 0   },
-      { userId: user.id, videoId: 'v2', watched: false, progressSecs: 120 },
+      { userId: user.id, videoId: videoId1, watched: true,  progressSecs: 0   },
+      { userId: user.id, videoId: videoId2, watched: false, progressSecs: 120 },
     ],
   });
 }, 60_000);
@@ -114,9 +122,9 @@ describe('GET /me/courses/:id/videos', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toMatchObject([
-      { id: 'v1', title: 'Video One',   watched: true,  progressSecs: 0   },
-      { id: 'v2', title: 'Video Two',   watched: false, progressSecs: 120 },
-      { id: 'v3', title: 'Video Three', watched: false, progressSecs: 0   },
+      { id: videoId1, title: 'Video One',   watched: true,  progressSecs: 0   },
+      { id: videoId2, title: 'Video Two',   watched: false, progressSecs: 120 },
+      { id: videoId3, title: 'Video Three', watched: false, progressSecs: 0   },
     ]);
     expect(res.body.pagination).toMatchObject({
       total: 3,
@@ -130,7 +138,7 @@ describe('GET /me/courses/:id/videos', () => {
     const res = await request(app).get(`/me/courses/${courseId}/videos?limit=1&offset=1`);
 
     expect(res.status).toBe(200);
-    expect(res.body.data).toMatchObject([{ id: 'v2', watched: false, progressSecs: 120 }]);
+    expect(res.body.data).toMatchObject([{ id: videoId2, watched: false, progressSecs: 120 }]);
     expect(res.body.pagination).toMatchObject({ total: 3, limit: 1, offset: 1, hasMore: true });
   });
 
@@ -144,6 +152,68 @@ describe('GET /me/courses/:id/videos', () => {
 
   it('returns 400 for an invalid course UUID', async () => {
     const res = await request(app).get('/me/courses/not-a-uuid/videos');
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Invalid course ID format');
+  });
+});
+
+describe('GET /me/courses/:id/videos/:videoId', () => {
+  it('returns 200 with the video and user progress', async () => {
+    const res = await request(app).get(`/me/courses/${courseId}/videos/${videoId1}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toMatchObject({
+      id: videoId1,
+      title: 'Video One',
+      watched: true,
+      progressSecs: 0,
+    });
+  });
+
+  it('returns progress for a video with partial progress', async () => {
+    const res = await request(app).get(`/me/courses/${courseId}/videos/${videoId2}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ id: videoId2, watched: false, progressSecs: 120 });
+  });
+
+  it('returns defaults for a video with no progress entry', async () => {
+    const res = await request(app).get(`/me/courses/${courseId}/videos/${videoId3}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ id: videoId3, watched: false, progressSecs: 0 });
+  });
+
+  it('returns 403 if user has no active subscription to a plan including this course', async () => {
+    const res = await request(app).get(`/me/courses/${unsubscribedCourseId}/videos/${videoId1}`);
+
+    expect(res.status).toBe(403);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Forbidden');
+  });
+
+  it('returns 404 if the video does not exist in the course', async () => {
+    const nonExistentVideoId = randomUUID();
+    const res = await request(app).get(`/me/courses/${courseId}/videos/${nonExistentVideoId}`);
+
+    expect(res.status).toBe(404);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Video not found');
+  });
+
+  it('returns 400 for an invalid video UUID', async () => {
+    const res = await request(app).get(`/me/courses/${courseId}/videos/not-a-uuid`);
+
+    expect(res.status).toBe(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.error).toBe('Invalid video ID format');
+  });
+
+  it('returns 400 for an invalid course UUID', async () => {
+    const res = await request(app).get(`/me/courses/not-a-uuid/videos/${randomUUID()}`);
 
     expect(res.status).toBe(400);
     expect(res.body.success).toBe(false);

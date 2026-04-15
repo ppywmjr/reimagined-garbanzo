@@ -64,3 +64,31 @@ export async function getCourseVideos(courseId: string, clerkUserId: string | nu
     total,
   }
 }
+
+export async function getCourseVideoById(courseId: string, videoId: string, clerkUserId: string | null) {
+  const courseVideo = await getPrismaClient().courseVideo.findFirst({
+    where: { courseId, videoId },
+    include: {
+      video: {
+        include: {
+          userProgress: clerkUserId
+            ? { where: { user: { clerkUserId } }, take: 1 }
+            : { take: 0 },
+        },
+      },
+    },
+  })
+
+  if (!courseVideo) return null
+
+  const { video } = courseVideo
+  const { userProgress, ...videoFields } = video
+  return {
+    id: videoFields.id,
+    title: videoFields.title,
+    url: videoFields.url,
+    thumbnail: videoFields.thumbnail,
+    watched: userProgress[0]?.watched ?? false,
+    progressSecs: userProgress[0]?.progressSecs ?? 0,
+  }
+}

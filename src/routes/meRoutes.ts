@@ -45,4 +45,27 @@ router.get('/me/courses/:id/videos', async (req, res) => {
   })
 })
 
+router.get('/me/courses/:id/videos/:videoId', async (req, res) => {
+  console.log('GET /me/courses/:id/videos/:videoId called with params:', req.params)
+  const parseCourseId = z.uuid().safeParse(req.params.id)
+  if (!parseCourseId.success) {
+    return res.status(400).json({ success: false, error: 'Invalid course ID format' })
+  }
+  const parseVideoId = z.uuid().safeParse(req.params.videoId)
+  if (!parseVideoId.success) {
+    return res.status(400).json({ success: false, error: 'Invalid video ID format' })
+  }
+  const { userId } = getAuth(req)
+  console.log('Parsed courseId:', parseCourseId.data, 'Parsed videoId:', parseVideoId.data, 'UserId:', userId)
+  const hasAccess = await userCoursesService.userHasAccessToCourse(userId!, parseCourseId.data)
+  if (!hasAccess) {
+    return res.status(403).json({ success: false, error: 'Forbidden' })
+  }
+  const video = await courseService.getCourseVideoById(parseCourseId.data, parseVideoId.data, userId!)
+  if (!video) {
+    return res.status(404).json({ success: false, error: 'Video not found' })
+  }
+  res.json({ success: true, data: video })
+})
+
 export default router
