@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.railpack.com",
-  "secrets": ["DATABASE_URL"],
+  "secrets": ["DATABASE_URL", "CLERK_SECRET_KEY", "INTERNAL_API_SECRET"],
   "steps": {
     "build": {
       "secrets": ["*"],

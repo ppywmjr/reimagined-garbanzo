@@ -1,5 +1,5 @@
 import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
-import request from 'supertest';
+import { request } from '../helpers/api';
 import { execSync } from 'child_process';
 import { vi } from 'vitest';
 import { getAuth, clerkClient } from '@clerk/express';
