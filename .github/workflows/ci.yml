@@ -22,8 +22,18 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "pnpm"
+      - name: Restore pnpm cache
+        id: pnpm-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/pnpm/store
+            node_modules
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-
       - name: Install dependencies
+        if: steps.pnpm-cache.outputs.cache-hit != 'true'
         run: pnpm install
       - name: Upload node_modules
         uses: actions/upload-artifact@v4
@@ -49,7 +59,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "pnpm"
       - name: Download node_modules
         uses: actions/download-artifact@v4
         with:
