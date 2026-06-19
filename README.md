@@ -4,7 +4,7 @@ An Express + Prisma API with PostgreSQL, structured in layers (routes → servic
 
 ## Prerequisites
 
-- Node.js 22+
+- Node.js 24+
 - Docker (for the local PostgreSQL instance)
 - A `.env` file with `DATABASE_URL` set, e.g.:
   ```
@@ -18,13 +18,13 @@ An Express + Prisma API with PostgreSQL, structured in layers (routes → servic
 docker compose up -d
 
 # Install dependencies
-npm ci
+pnpm install
 
 # Seed the database with sample data
 npx prisma db seed
 
 # Start the development server
-npm run dev
+pnpm run dev
 ```
 
 ## Working with Prisma
