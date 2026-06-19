@@ -1,0 +1,13 @@
+packages:
+  - '.'
+
+ignoreScripts: true
+allowBuilds:
+  '@prisma/engines': true
+  cpu-features: true
+  esbuild: true
+  prisma: true
+  protobufjs: true
+  ssh2: true
+
+minimumReleaseAge: 2880

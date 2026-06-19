@@ -5,3 +5,6 @@ coverage/
 .env
 .vscode/
 prisma/generated/
+
+# pnpm
+.pnpm-store
