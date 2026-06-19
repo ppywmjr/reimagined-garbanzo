@@ -56,7 +56,7 @@ jobs:
           name: node-modules
           path: node_modules/
       - name: Generate Prisma client
-        run: npx prisma generate
+        run: pnpm exec prisma generate
         env:
           DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
       - name: Run integration tests
