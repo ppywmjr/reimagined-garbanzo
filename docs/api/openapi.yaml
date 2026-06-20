@@ -1,0 +1,694 @@
+# OpenAPI Specification
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Video Subscription API
+  description: REST API for managing video course subscriptions
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.example.com
+    description: Production server
+
+paths:
+  /signup:
+    post:
+      summary: Create a new user
+      description: Register a new user after Clerk authentication
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - clerkUserId
+                - email
+              properties:
+                clerkUserId:
+                  type: string
+                  description: Clerk user ID (must match JWT)
+                email:
+                  type: string
+                  format: email
+                  description: User's email (must match Clerk primary email)
+                displayName:
+                  type: string
+                  maxLength: 100
+                  description: Optional display name
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/User'
+        '200':
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Unauthorized"
+        '403':
+          description: Forbidden (clerkUserId or email mismatch)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+        '400':
+          description: Bad request (invalid body)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+
+  /users/{id}:
+    get:
+      summary: Get a user by ID
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid UUID format
+        '404':
+          description: User not found
+
+  /users:
+    get:
+      summary: Get all users with pagination
+      tags:
+        - Users
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /plans:
+    post:
+      summary: Create a new plan (admin only)
+      tags:
+        - Plans
+      security:
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+      responses:
+        '201':
+          description: Plan created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Plan'
+        '401':
+          description: Unauthorized (invalid API key)
+
+    get:
+      summary: Get all plans with pagination
+      tags:
+        - Plans
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of plans
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Plan'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /plans/{id}:
+    get:
+      summary: Get a plan by ID
+      tags:
+        - Plans
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Plan found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Plan'
+        '400':
+          description: Invalid UUID format
+        '404':
+          description: Plan not found
+
+  /courses:
+    get:
+      summary: Get all published courses with pagination
+      tags:
+        - Courses
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /courses/{id}:
+    get:
+      summary: Get a published course by ID
+      tags:
+        - Courses
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Course'
+        '400':
+          description: Invalid UUID format
+        '404':
+          description: Course not found or not published
+
+  /courses/{id}/videos:
+    get:
+      summary: Get videos in a course with user progress
+      tags:
+        - Courses
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of videos with progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseVideoWithProgress'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /me/courses:
+    get:
+      summary: Get courses accessible to authenticated user
+      tags:
+        - Me
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of accessible courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          description: Unauthorized
+
+  /me/courses/{id}/videos:
+    get:
+      summary: Get videos in course with user progress
+      tags:
+        - Me
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of videos with progress
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseVideoWithProgress'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden (no access to course)
+
+  /me/courses/{id}/videos/{videoId}:
+    patch:
+      summary: Update video watch progress
+      tags:
+        - Me
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                watched:
+                  type: boolean
+                progressSecs:
+                  type: integer
+                  minimum: 0
+              anyOf:
+                - required: [watched]
+                - required: [progressSecs]
+      responses:
+        '200':
+          description: Progress updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/UserVideoProgress'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '400':
+          description: Bad request
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-internal-api-key
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        clerkUserId:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        isFree:
+          type: boolean
+        stripeProductId:
+          type: string
+          nullable: true
+        stripePriceId:
+          type: string
+          nullable: true
+        billingInterval:
+          type: string
+          enum: [month, year]
+          nullable: true
+        pricePence:
+          type: integer
+          nullable: true
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        deactivatedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        thumbnail:
+          type: string
+          nullable: true
+        sortOrder:
+          type: integer
+
+    Video:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        url:
+          type: string
+        thumbnail:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UserVideoProgress:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        videoId:
+          type: string
+          format: uuid
+        watched:
+          type: boolean
+        progressSecs:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+
+    CourseVideoWithProgress:
+      type: object
+      properties:
+        courseId:
+          type: string
+          format: uuid
+        videoId:
+          type: string
+          format: uuid
+        position:
+          type: integer
+        video:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            title:
+              type: string
+            url:
+              type: string
+            thumbnail:
+              type: string
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+            userProgress:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserVideoProgress'
+
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        hasMore:
+          type: boolean
+
+    CreatePlanRequest:
+      type: object
+      required:
+        - name
+        - stripeProductId
+        - stripePriceId
+        - billingInterval
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        stripeProductId:
+          type: string
+        stripePriceId:
+          type: string
+        billingInterval:
+          type: string
+          enum: [month, year]
+        pricePence:
+          type: integer
+          minimum: 0
+        isActive:
+          type: boolean
+          default: true
+```

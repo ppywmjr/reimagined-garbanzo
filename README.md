@@ -27,73 +27,22 @@ npx prisma db seed
 pnpm run dev
 ```
 
+## Documentation
+
+Detailed documentation is available in the `/docs` directory:
+
+- [Architecture & Project Structure](./docs/architecture.md)
+- [Database Schema & Migrations](./docs/database/migrations.md)
+- [API Reference](./docs/api/README.md)
+
 ## Working with Prisma
 
-### Changing the schema
+For detailed instructions on managing the database schema and migrations, see the [Database Migrations Guide](./docs/database/migrations.md).
 
-Edit `prisma/schema.prisma`, then:
-
-```bash
-# Create a migration and apply it to the local database
-# Also regenerates the Prisma client automatically
-npx prisma migrate dev --name <short-description>
-```
-
-### Regenerating the client only (no schema change)
-
-```bash
-npx prisma generate
-```
-
-### Seeding the database
-
-```bash
-npx prisma db seed
-```
-
-The seed script lives at `prisma/seed.ts` and is configured via the `prisma.seed` field in `package.json`.
-
-### Resetting the local database
-
-Drops all tables, re-runs all migrations:
-
-```bash
-npx prisma migrate reset
-```
-
-> **Warning:** never run this against a production database.
-
-### Inspecting the database
-
-```bash
-npx prisma studio
-```
-
-Opens a browser-based GUI at `http://localhost:5555`.
-
-### Migrations in production
-
-```bash
-npx prisma migrate deploy
-```
-
-Applies any pending migrations without prompting. Run this in your CI/CD pipeline. Never delete the `prisma/migrations` folder after changes have been deployed to production.
+Quick commands:
+- `npx prisma studio`: Open browser-based GUI at `http://localhost:5555`
+- `npx prisma db seed`: Seed the database with sample data
 
 ## Project structure
 
-```
-prisma/
-  schema.prisma        # Data models
-  seed.ts              # Seed script
-  migrations/          # Migration history — commit this to git
-  generated/           # Generated Prisma client — do not edit manually
-src/
-  index.ts             # Express app entry point
-  db.ts                # Prisma client singleton
-  routes/
-    userRoutes.ts      # User endpoints
-    postRoutes.ts      # Post endpoints
-  services/
-    userService.ts     # User business logic / DB queries
-    postService.ts     # Post business logic / DB queries
-```
+This project follows a layered architecture (Routes → Services → DB). For a detailed breakdown of the layers and request flow, see the [Architecture Documentation](./docs/architecture.md).
