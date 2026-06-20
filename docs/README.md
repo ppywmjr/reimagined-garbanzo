@@ -22,6 +22,7 @@ This application provides a layered architecture for managing:
 | Auth | Clerk (JWT-based authentication) |
 | Payments | Stripe (webhooks for subscription management) |
 | Testing | Vitest + Supertest |
+| Logging | Custom middleware for request/response logging |
 
 ## Quick Start
 
