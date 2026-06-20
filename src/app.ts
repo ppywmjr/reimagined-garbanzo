@@ -12,6 +12,9 @@ const app = express()
 
 // CORS is only enforced in production. Set ALLOWED_ORIGIN to the frontend URL.
 // In dev/staging, set NODE_ENV to anything other than 'production' to bypass.
+// v8 ignore: the false branch (dev/staging) requires NODE_ENV to be set at module load time,
+// which cannot be changed after the module is imported in tests.
+/* v8 ignore next 3 */
 if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'staging') {
   const allowedOrigin = process.env.ALLOWED_ORIGIN
   app.use(cors({ origin: allowedOrigin }))

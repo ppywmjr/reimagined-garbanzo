@@ -89,6 +89,9 @@ router.post('/me/courses/:id/videos/:videoId/progress', async (req, res) => {
   }
   const parseBody = progressBodySchema.safeParse(req.body)
   if (!parseBody.success) {
+    // v8 ignore: Zod always populates issues when validation fails, so the
+    // ?? fallback ('Invalid request body') is unreachable in practice.
+    /* v8 ignore next */
     return res.status(400).json({ success: false, error: parseBody.error.issues[0]?.message ?? 'Invalid request body' })
   }
   const { userId } = getAuth(req)
