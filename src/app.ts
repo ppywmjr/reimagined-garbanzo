@@ -6,6 +6,7 @@ import courseRoutes from './routes/courseRoutes.js'
 import meRoutes from './routes/meRoutes.js'
 import { clerkMiddleware } from '@clerk/express'
 import { internalApiKey } from './middleware/internalApiKey.js'
+import { logger } from './middleware/logger.js'
 
 const app = express()
 
@@ -19,6 +20,7 @@ if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'staging'
 // Any raw-body route (e.g. Stripe webhook) must be registered here,
 // before express.json() and before internalApiKey.
 
+app.use(logger)
 app.use(express.json({ limit: '100kb' }))
 app.use(internalApiKey)
 app.use(clerkMiddleware())
