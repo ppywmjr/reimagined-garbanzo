@@ -7,6 +7,7 @@ export default defineConfig({
     testTimeout: 60_000,
     hookTimeout: 60_000,
     setupFiles: ['tests/setup.ts'],
+    exclude: ['**/node_modules/**', '**/.stryker-tmp/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
