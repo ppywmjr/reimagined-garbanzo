@@ -60,10 +60,16 @@ describe('getUserCourses', () => {
 
         const result = await getUserCourses('clerk_123', 10, 0)
 
-        expect(mockCourseFindMany).toHaveBeenCalledWith(
-            expect.objectContaining({ take: 10, skip: 0, orderBy: { sortOrder: 'asc' } }),
-        )
-        expect(mockCourseCount).toHaveBeenCalled()
+        expect(mockCourseFindMany).toHaveBeenCalledWith({
+            where: expect.objectContaining({ isPublished: true }),
+            select: expect.any(Object),
+            take: 10,
+            skip: 0,
+            orderBy: { sortOrder: 'asc' },
+        })
+        expect(mockCourseCount).toHaveBeenCalledWith({
+            where: expect.objectContaining({ isPublished: true }),
+        })
         expect(result).toEqual({ courses, total: 1 })
     })
 

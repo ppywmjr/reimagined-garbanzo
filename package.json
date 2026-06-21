@@ -17,10 +17,12 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "mutate": "stryker run",
-    "ai:test:all": "vitest run tests 2>&1 | tail -15",
-    "ai:test:unit": "vitest run tests/unit 2>&1 | tail -15",
-    "ai:coverage": "vitest run --coverage 2>&1 | tail -15",
-    "ai:mutate": "stryker run 2>&1 | tail -15",
+    "ai:test:all": "vitest run tests 2>&1 | tail -30",
+    "ai:test:unit": "vitest run tests/unit 2>&1 | tail -30",
+    "ai:test:unit:verbose:fail": "pnpm vitest run tests/unit --reporter=verbose 2>&1 | grep -A 30 \"FAIL\"",
+    "ai:coverage": "vitest run --coverage 2>&1 | tail -30",
+    "ai:mutate": "stryker run 2>&1 | tail -80",
+    "ai:mutate:survived": "mutate 2>&1 | grep -A 5 \"\\[Survived\\]\" | tail -30",
     "db-seed": "prisma db seed"
   },
   "prisma": {

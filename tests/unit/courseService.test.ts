@@ -93,14 +93,13 @@ describe('getAllCourses', () => {
 
         const result = await getAllCourses(10, 0)
 
-        expect(mockCourseFindMany).toHaveBeenCalledWith(
-            expect.objectContaining({
-                where: { isPublished: true },
-                take: 10,
-                skip: 0,
-                orderBy: { sortOrder: 'asc' },
-            }),
-        )
+        expect(mockCourseFindMany).toHaveBeenCalledWith({
+            where: { isPublished: true },
+            select: expect.any(Object),
+            take: 10,
+            skip: 0,
+            orderBy: { sortOrder: 'asc' },
+        })
         expect(mockCourseCount).toHaveBeenCalledWith({ where: { isPublished: true } })
         expect(result).toEqual({ courses, total: 1 })
     })
@@ -113,9 +112,10 @@ describe('getCourseById', () => {
 
         const result = await getCourseById('c1')
 
-        expect(mockCourseFindFirst).toHaveBeenCalledWith(
-            expect.objectContaining({ where: { id: 'c1', isPublished: true } }),
-        )
+        expect(mockCourseFindFirst).toHaveBeenCalledWith({
+            where: { id: 'c1', isPublished: true },
+            select: expect.any(Object),
+        })
         expect(result).toEqual(course)
     })
 
@@ -136,11 +136,14 @@ describe('getCourseVideos', () => {
 
         await getCourseVideos('course_1', null, 10, 0)
 
-        expect(mockCourseVideoFindMany).toHaveBeenCalledWith(
-            expect.objectContaining({
-                include: { video: { include: { userProgress: { take: 0 } } } },
-            }),
-        )
+        expect(mockCourseVideoFindMany).toHaveBeenCalledWith({
+            where: { courseId: 'course_1' },
+            orderBy: { position: 'asc' },
+            take: 10,
+            skip: 0,
+            include: { video: { include: { userProgress: { take: 0 } } } },
+        })
+        expect(mockCourseVideoCount).toHaveBeenCalledWith({ where: { courseId: 'course_1' } })
     })
 
     it('passes non-null userId → user-scoped include to findMany', async () => {
@@ -149,17 +152,23 @@ describe('getCourseVideos', () => {
 
         await getCourseVideos('course_1', 'clerk_123', 10, 0)
 
-        expect(mockCourseVideoFindMany).toHaveBeenCalledWith(
-            expect.objectContaining({
-                include: {
-                    video: {
-                        include: {
-                            userProgress: { where: { user: { clerkUserId: 'clerk_123' } }, take: 1 },
+        expect(mockCourseVideoFindMany).toHaveBeenCalledWith({
+            where: { courseId: 'course_1' },
+            orderBy: { position: 'asc' },
+            take: 10,
+            skip: 0,
+            include: {
+                video: {
+                    include: {
+                        userProgress: {
+                            where: { user: { clerkUserId: 'clerk_123' } },
+                            take: 1,
                         },
                     },
                 },
-            }),
-        )
+            },
+        })
+        expect(mockCourseVideoCount).toHaveBeenCalledWith({ where: { courseId: 'course_1' } })
     })
 
     it('maps userProgress data into each video result', async () => {
@@ -186,11 +195,10 @@ describe('getCourseVideoById', () => {
 
         await getCourseVideoById('course_1', 'v1', null)
 
-        expect(mockCourseVideoFindFirst).toHaveBeenCalledWith(
-            expect.objectContaining({
-                include: { video: { include: { userProgress: { take: 0 } } } },
-            }),
-        )
+        expect(mockCourseVideoFindFirst).toHaveBeenCalledWith({
+            where: { courseId: 'course_1', videoId: 'v1' },
+            include: { video: { include: { userProgress: { take: 0 } } } },
+        })
     })
 
     it('passes non-null userId → user-scoped include to findFirst', async () => {
@@ -198,17 +206,19 @@ describe('getCourseVideoById', () => {
 
         await getCourseVideoById('course_1', 'v1', 'clerk_123')
 
-        expect(mockCourseVideoFindFirst).toHaveBeenCalledWith(
-            expect.objectContaining({
-                include: {
-                    video: {
-                        include: {
-                            userProgress: { where: { user: { clerkUserId: 'clerk_123' } }, take: 1 },
+        expect(mockCourseVideoFindFirst).toHaveBeenCalledWith({
+            where: { courseId: 'course_1', videoId: 'v1' },
+            include: {
+                video: {
+                    include: {
+                        userProgress: {
+                            where: { user: { clerkUserId: 'clerk_123' } },
+                            take: 1,
                         },
                     },
                 },
-            }),
-        )
+            },
+        })
     })
 
     it('maps userProgress data from the found video', async () => {

@@ -32,6 +32,8 @@ The following command are pre-approved to run as ai. You should run them after e
 ```
 pnpm run ai:test:all
 pnpm run ai:test:unit
+pnpm run ai:test:unit:verbose:fail
 pnpm run ai:coverage
 pnpm run ai:mutate
+pnpm run ai:mutate:survived
 ```

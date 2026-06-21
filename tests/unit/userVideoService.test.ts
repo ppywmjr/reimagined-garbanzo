@@ -59,6 +59,9 @@ describe('upsertVideoProgress', () => {
         const result = await upsertVideoProgress('clerk_123', 'course_1', 'v1', { watched: true })
 
         expect(result).toBeNull()
+        expect(mockCourseVideoFindFirst).toHaveBeenCalledWith({
+            where: { courseId: 'course_1', videoId: 'v1' },
+        })
         expect(mockUserFindUniqueOrThrow).not.toHaveBeenCalled()
         expect(mockUserVideoProgressUpsert).not.toHaveBeenCalled()
     })
