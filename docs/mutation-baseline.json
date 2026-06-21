@@ -1,0 +1,7 @@
+{
+  "timestamp": "2026-06-21T13:46:39.879Z",
+  "mutationScore": 91.78,
+  "totalMutants": 438,
+  "killedMutants": 402,
+  "survivedMutants": 36
+}

@@ -18,7 +18,7 @@ const config = {
     '!src/lib/prisma.ts',   // Prisma singleton factory — no domain logic
   ],
   coverageAnalysis: 'perTest',
-  reporters: ['html', 'clear-text', 'progress'],
+  reporters: ['html', 'clear-text', 'progress', 'json'],
   htmlReporter: {
     fileName: 'reports/mutation/index.html',
   },

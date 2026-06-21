@@ -73,7 +73,8 @@ docs/
 │   │   └── video_progress.md
 │   └── openapi.yaml       # OpenAPI/Swagger specification
 ├── dependencies.md        # Tech stack details
-└── development.md         # Local setup & contributing
+├── development.md         # Local setup & contributing
+└── mutation-testing.md    # Mutation testing baseline & delta tracking
 ```
 
 ## API Reference

@@ -1,0 +1,53 @@
+name: Mutation Check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  mutation-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate
+        env:
+          DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+
+      - name: Run mutation tests
+        run: pnpm run mutate
+
+      - name: Check mutation score delta
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execSync } = require('child_process');
+
+            try {
+              console.log('Running mutation comparison...');
+              // Run the comparison script using pnpm exec tsx
+              const output = execSync('pnpm run mutate:compare', { encoding: 'utf8' });
+              console.log(output);
+
+              // If the script exits with 0, it's a success.
+              // If it exits with 1 (due to delta < 0), the action will fail.
+            } catch (error) {
+              console.error('Mutation score check failed:');
+              console.error(error.stdout || error.message);
+              process.exit(1);
+            }

@@ -17,6 +17,8 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "mutate": "stryker run",
+    "mutate:baseline": "tsx scripts/update-mutation-baseline.ts",
+    "mutate:compare": "tsx scripts/compare-mutation-score.ts",
     "ai:test:all": "vitest run tests 2>&1 | tail -30",
     "ai:test:unit": "vitest run tests/unit 2>&1 | tail -30",
     "ai:test:unit:verbose:fail": "pnpm vitest run tests/unit --reporter=verbose 2>&1 | grep -A 30 \"FAIL\"",
