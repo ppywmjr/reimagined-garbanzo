@@ -26,3 +26,12 @@ See `docs/database/migrations.md` for the full workflow.
 - Use `async/await` throughout — no `.then()` chains.
 - Route handlers should not contain try/catch unless the error response differs per route.
 - All request body and path values must be `safeParsed` by Zod.
+
+## Testing
+The following command are pre-approved to run as ai. You should run them after every complete job. Use the results to determine if the code is working as expected or if extra coverage is needed.
+```
+pnpm run ai:test:all
+pnpm run ai:test:unit
+pnpm run ai:coverage
+pnpm run ai:mutate
+```

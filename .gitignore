@@ -8,3 +8,7 @@ prisma/generated/
 
 # pnpm
 .pnpm-store
+
+# Stryker mutation testing
+.stryker-tmp/
+reports/

@@ -5,7 +5,11 @@ vi.mock('../../src/lib/prisma.js', () => ({
 }))
 
 import { getPrismaClient } from '../../src/lib/prisma.js'
-import { userHasAccessToVideo, upsertVideoProgress } from '../../src/services/userVideoService.js'
+import {
+    userHasAccessToVideo,
+    upsertVideoProgress,
+    buildVideoAccessWhere,
+} from '../../src/services/userVideoService.js'
 
 const mockCourseVideoFindFirst = vi.fn()
 const mockUserFindUniqueOrThrow = vi.fn()
@@ -91,5 +95,25 @@ describe('upsertVideoProgress', () => {
                 create: expect.objectContaining({ watched: false, progressSecs: 0 }),
             }),
         )
+    })
+})
+
+describe('buildVideoAccessWhere', () => {
+    it('sets videoId at the top level', () => {
+        const where = buildVideoAccessWhere('clerk_123', 'video_1')
+        expect(where.videoId).toBe('video_1')
+    })
+
+    it('requires the course to be published', () => {
+        const where = buildVideoAccessWhere('clerk_123', 'video_1')
+        expect(where.course.isPublished).toBe(true)
+    })
+
+    it('nests the subscription filter inside course.planCourses.some.plan.subscriptions.some', () => {
+        const where = buildVideoAccessWhere('clerk_123', 'video_1')
+        const subscriptionFilter = where.course.planCourses.some.plan.subscriptions.some
+        expect(subscriptionFilter.user).toEqual({ clerkUserId: 'clerk_123' })
+        expect(subscriptionFilter.status.in).toHaveLength(2)
+        expect(subscriptionFilter.AND).toHaveLength(2)
     })
 })

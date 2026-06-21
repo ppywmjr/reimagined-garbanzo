@@ -1,35 +1,27 @@
 import { getPrismaClient } from '../lib/prisma.js'
-import { SubscriptionStatus } from '../../prisma/generated/enums.js'
+import { activeSubscriptionFilter } from '../lib/subscriptionFilter.js'
 
-function activeSubscriptionFilter(clerkUserId: string) {
-  const now = new Date()
+export function buildVideoAccessWhere(clerkUserId: string, videoId: string) {
   return {
-    user: { clerkUserId },
-    status: { in: [SubscriptionStatus.active, SubscriptionStatus.trialing] },
-    AND: [
-      { OR: [{ currentPeriodStart: null }, { currentPeriodStart: { lte: now } }] },
-      { OR: [{ currentPeriodEnd: null }, { currentPeriodEnd: { gte: now } }] },
-    ],
-  }
-}
-
-export async function userHasAccessToVideo(clerkUserId: string, videoId: string): Promise<boolean> {
-  const courseVideo = await getPrismaClient().courseVideo.findFirst({
-    where: {
-      videoId,
-      course: {
-        isPublished: true,
-        planCourses: {
-          some: {
-            plan: {
-              subscriptions: {
-                some: activeSubscriptionFilter(clerkUserId),
-              },
+    videoId,
+    course: {
+      isPublished: true,
+      planCourses: {
+        some: {
+          plan: {
+            subscriptions: {
+              some: activeSubscriptionFilter(clerkUserId),
             },
           },
         },
       },
     },
+  }
+}
+
+export async function userHasAccessToVideo(clerkUserId: string, videoId: string): Promise<boolean> {
+  const courseVideo = await getPrismaClient().courseVideo.findFirst({
+    where: buildVideoAccessWhere(clerkUserId, videoId),
   })
   return courseVideo !== null
 }
