@@ -8,6 +8,30 @@ const courseSelect = {
   sortOrder: true,
 } as const
 
+export function buildUserProgressInclude(clerkUserId: string | null) {
+  return clerkUserId
+    ? { where: { user: { clerkUserId } }, take: 1 as const }
+    : { take: 0 as const }
+}
+
+export function mapVideoResult(video: {
+  id: string
+  title: string
+  url: string
+  thumbnail: string
+  userProgress: Array<{ watched: boolean; progressSecs: number }>
+}) {
+  const { userProgress, ...videoFields } = video
+  return {
+    id: videoFields.id,
+    title: videoFields.title,
+    url: videoFields.url,
+    thumbnail: videoFields.thumbnail,
+    watched: userProgress[0]?.watched ?? false,
+    progressSecs: userProgress[0]?.progressSecs ?? 0,
+  }
+}
+
 export async function getAllCourses(limit: number, offset: number) {
   const [courses, total] = await Promise.all([
     getPrismaClient().course.findMany({
@@ -39,9 +63,7 @@ export async function getCourseVideos(courseId: string, clerkUserId: string | nu
       include: {
         video: {
           include: {
-            userProgress: clerkUserId
-              ? { where: { user: { clerkUserId } }, take: 1 }
-              : { take: 0 },
+            userProgress: buildUserProgressInclude(clerkUserId),
           },
         },
       },
@@ -50,17 +72,7 @@ export async function getCourseVideos(courseId: string, clerkUserId: string | nu
   ])
 
   return {
-    videos: courseVideos.map(({ video }) => {
-      const { userProgress, ...videoFields } = video
-      return {
-        id: videoFields.id,
-        title: videoFields.title,
-        url: videoFields.url,
-        thumbnail: videoFields.thumbnail,
-        watched: userProgress[0]?.watched ?? false,
-        progressSecs: userProgress[0]?.progressSecs ?? 0,
-      }
-    }),
+    videos: courseVideos.map(({ video }) => mapVideoResult(video)),
     total,
   }
 }
@@ -71,9 +83,7 @@ export async function getCourseVideoById(courseId: string, videoId: string, cler
     include: {
       video: {
         include: {
-          userProgress: clerkUserId
-            ? { where: { user: { clerkUserId } }, take: 1 }
-            : { take: 0 },
+          userProgress: buildUserProgressInclude(clerkUserId),
         },
       },
     },
@@ -81,14 +91,5 @@ export async function getCourseVideoById(courseId: string, videoId: string, cler
 
   if (!courseVideo) return null
 
-  const { video } = courseVideo
-  const { userProgress, ...videoFields } = video
-  return {
-    id: videoFields.id,
-    title: videoFields.title,
-    url: videoFields.url,
-    thumbnail: videoFields.thumbnail,
-    watched: userProgress[0]?.watched ?? false,
-    progressSecs: userProgress[0]?.progressSecs ?? 0,
-  }
+  return mapVideoResult(courseVideo.video)
 }

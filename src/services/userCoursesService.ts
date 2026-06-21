@@ -1,5 +1,5 @@
 import { getPrismaClient } from '../lib/prisma.js'
-import { SubscriptionStatus } from '../../prisma/generated/enums.js'
+import { activeSubscriptionFilter } from '../lib/subscriptionFilter.js'
 
 const courseSelect = {
   id: true,
@@ -9,34 +9,19 @@ const courseSelect = {
   sortOrder: true,
 } as const
 
-function activeSubscriptionFilter(clerkUserId: string) {
-  const now = new Date()
+export function buildCourseAccessWhere(clerkUserId: string, courseId: string) {
   return {
-    user: { clerkUserId },
-    status: { in: [SubscriptionStatus.active, SubscriptionStatus.trialing] },
-    AND: [
-      { OR: [{ currentPeriodStart: null }, { currentPeriodStart: { lte: now } }] },
-      { OR: [{ currentPeriodEnd: null }, { currentPeriodEnd: { gte: now } }] },
-    ],
+    ...activeSubscriptionFilter(clerkUserId),
+    plan: {
+      planCourses: {
+        some: { courseId },
+      },
+    },
   }
 }
 
-export async function userHasAccessToCourse(clerkUserId: string, courseId: string): Promise<boolean> {
-  const subscription = await getPrismaClient().subscription.findFirst({
-    where: {
-      ...activeSubscriptionFilter(clerkUserId),
-      plan: {
-        planCourses: {
-          some: { courseId },
-        },
-      },
-    },
-  })
-  return subscription !== null
-}
-
-export async function getUserCourses(clerkUserId: string, limit: number, offset: number) {
-  const where = {
+export function buildUserCoursesWhere(clerkUserId: string) {
+  return {
     isPublished: true,
     planCourses: {
       some: {
@@ -48,6 +33,17 @@ export async function getUserCourses(clerkUserId: string, limit: number, offset:
       },
     },
   }
+}
+
+export async function userHasAccessToCourse(clerkUserId: string, courseId: string): Promise<boolean> {
+  const subscription = await getPrismaClient().subscription.findFirst({
+    where: buildCourseAccessWhere(clerkUserId, courseId),
+  })
+  return subscription !== null
+}
+
+export async function getUserCourses(clerkUserId: string, limit: number, offset: number) {
+  const where = buildUserCoursesWhere(clerkUserId)
   const [courses, total] = await Promise.all([
     getPrismaClient().course.findMany({
       where,
