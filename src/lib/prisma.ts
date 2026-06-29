@@ -5,7 +5,8 @@ let prismaInstance: PrismaClient | null = null
 
 export function getPrismaClient(): PrismaClient {
   if (!prismaInstance) {
-    const pool = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+    const max = process.env.DATABASE_POOL_MAX ? parseInt(process.env.DATABASE_POOL_MAX, 10) : 2
+    const pool = new PrismaPg({ connectionString: process.env.DATABASE_URL! }, { max })
     prismaInstance = new PrismaClient({ adapter: pool })
   }
   return prismaInstance
