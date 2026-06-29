@@ -19,18 +19,24 @@ async function shutdown(signal: string): Promise<void> {
   })
 }
 
-try {
-  await getPrismaClient().$connect()
-  console.log('Database connection established')
-} catch (err) {
-  console.error('Failed to connect to database', err)
-  process.exit(1)
+async function start(): Promise<void> {
+  try {
+    await getPrismaClient().$connect()
+    console.log('Database connection established')
+  } catch (err) {
+    console.error('Failed to connect to database', err)
+    process.exit(1)
+  }
+
+  server = app.listen(port, () =>
+    console.log(`
+🚀 Server ready at: http://localhost:${port}`),
+  )
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'))
+  process.on('SIGINT', () => shutdown('SIGINT'))
 }
 
-const server = app.listen(port, () =>
-  console.log(`
-🚀 Server ready at: http://localhost:${port}`),
-)
+let server: ReturnType<typeof app.listen>
 
-process.on('SIGTERM', () => shutdown('SIGTERM'))
-process.on('SIGINT', () => shutdown('SIGINT'))
+void start()
