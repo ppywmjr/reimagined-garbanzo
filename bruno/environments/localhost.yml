@@ -1,0 +1,12 @@
+name: localhost
+variables:
+  - secret: true
+    name: x-internal-api-key
+  - name: reimagined-garbanzo-base-url
+    value: http://localhost:3011
+  - name: courseId
+    value: 408408c9-5b1e-46fd-a4e6-108b83ab1dcc
+  - name: videoId
+    value: b3f4a2e1-0c5d-4f6e-8a7b-9c0d1e2f3a4b
+  - secret: true
+    name: clerk_token

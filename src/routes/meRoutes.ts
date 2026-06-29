@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import { getAuth } from '@clerk/express'
+import { getAuthWithBypass } from '../lib/auth-helper.js'
 import * as courseService from '../services/courseService.js'
 import * as userCoursesService from '../services/userCoursesService.js'
 import * as userVideoService from '../services/userVideoService.js'
@@ -18,7 +18,7 @@ const progressBodySchema = z
 const router = Router()
 
 router.use('/me', (req, res, next) => {
-  const { userId, isAuthenticated } = getAuth(req)
+  const { userId, isAuthenticated } = getAuthWithBypass(req)
   if (!isAuthenticated || !userId) {
     return res.status(401).json({ success: false, error: 'Unauthorized' })
   }
@@ -26,7 +26,7 @@ router.use('/me', (req, res, next) => {
 })
 
 router.get('/me/courses', async (req, res) => {
-  const { userId } = getAuth(req)
+  const { userId } = getAuthWithBypass(req)
   const { limit, offset } = paginationSchema.parse(req.query)
   const { courses, total } = await userCoursesService.getUserCourses(userId!, limit, offset)
   res.json({
@@ -41,7 +41,7 @@ router.get('/me/courses/:id/videos', async (req, res) => {
   if (!parse.success) {
     return res.status(400).json({ success: false, error: 'Invalid course ID format' })
   }
-  const { userId } = getAuth(req)
+  const { userId } = getAuthWithBypass(req)
   const hasAccess = await userCoursesService.userHasAccessToCourse(userId!, parse.data)
   if (!hasAccess) {
     return res.status(403).json({ success: false, error: 'Forbidden' })
@@ -64,7 +64,7 @@ router.get('/me/courses/:id/videos/:videoId', async (req, res) => {
   if (!parseVideoId.success) {
     return res.status(400).json({ success: false, error: 'Invalid video ID format' })
   }
-  const { userId } = getAuth(req)
+  const { userId } = getAuthWithBypass(req)
   const hasAccess = await userCoursesService.userHasAccessToCourse(userId!, parseCourseId.data)
   if (!hasAccess) {
     return res.status(403).json({ success: false, error: 'Forbidden' })
@@ -92,7 +92,7 @@ router.post('/me/courses/:id/videos/:videoId/progress', async (req, res) => {
     /* v8 ignore next */
     return res.status(400).json({ success: false, error: parseBody.error.issues[0]?.message ?? 'Invalid request body' })
   }
-  const { userId } = getAuth(req)
+  const { userId } = getAuthWithBypass(req)
   const hasAccess = await userCoursesService.userHasAccessToCourse(userId!, parseCourseId.data)
   if (!hasAccess) {
     return res.status(403).json({ success: false, error: 'Forbidden' })
