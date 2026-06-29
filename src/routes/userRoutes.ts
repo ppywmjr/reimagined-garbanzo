@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { z } from 'zod'
-import { getAuth, clerkClient } from '@clerk/express'
+import { clerkClient } from '@clerk/express'
+import { getAuthWithBypass } from '../lib/auth-helper.js'
 import * as userService from '../services/userService.js'
 
 const CreateUserBody = z.object({
@@ -12,7 +13,7 @@ const CreateUserBody = z.object({
 const router = Router()
 
 router.post('/signup', async (req, res) => {
-  const { userId, isAuthenticated } = getAuth(req)
+  const { userId, isAuthenticated } = getAuthWithBypass(req)
   if (!isAuthenticated || !userId) {
     return res.status(401).json({ success: false, error: 'Unauthorized' })
   }

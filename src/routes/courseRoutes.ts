@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import * as courseService from '../services/courseService.js'
 import { paginationSchema } from '../lib/validate.js'
-import { getAuth } from '@clerk/express'
+import { getAuthWithBypass } from '../lib/auth-helper.js'
 
 const router = Router()
 
@@ -21,7 +21,7 @@ router.get('/courses/:id/videos', async (req, res) => {
   if (!parse.success) {
     return res.status(400).json({ success: false, error: 'Invalid course ID format' })
   }
-  const { userId } = getAuth(req)
+  const { userId } = getAuthWithBypass(req)
   const { limit, offset } = paginationSchema.parse(req.query)
   const { videos, total } = await courseService.getCourseVideos(parse.data, userId ?? null, limit, offset)
   res.json({

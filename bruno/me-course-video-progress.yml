@@ -1,0 +1,33 @@
+info:
+  name: me course video progress
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{reimagined-garbanzo-base-url}}/me/courses/{{courseId}}/videos/{{videoId}}/progress"
+  headers:
+    - name: x-internal-api-key
+      value: "{{x-internal-api-key}}"
+    - name: Authorization
+      value: "Bearer {{clerk_token}}"
+  auth: inherit
+  body:
+    mode: raw
+    raw: '{"watched": true, "progressSecs": 120}'
+    options:
+      json: true
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+    options:
+      json: true
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
