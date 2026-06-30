@@ -16,7 +16,7 @@
     }
   },
   "deploy": {
-    "startCommand": "npm start",
+    "startCommand": "node dist/index.cjs",
     "healthcheckPath": "/health"
   }
 }
