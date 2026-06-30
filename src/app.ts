@@ -25,6 +25,11 @@ if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'staging'
 
 app.use(logger)
 app.use(express.json({ limit: '100kb' }))
+
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok' })
+})
+
 app.use(internalApiKey)
 app.use(clerkMiddleware())
 app.use(userRoutes)
