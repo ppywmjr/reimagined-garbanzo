@@ -28,15 +28,27 @@ async function start(): Promise<void> {
     process.exit(1)
   }
 
-  server = app.listen(port, () =>
-    console.log(`
-🚀 Server ready at: http://localhost:${port}`),
-  )
+  server = app.listen(port, () => {
+    console.log(`🚀 Server ready at: http://localhost:${port}`)
+    console.log(`NODE_ENV=${process.env.NODE_ENV ?? 'unset'}`)
+    console.log(`INTERNAL_API_SECRET=${process.env.INTERNAL_API_SECRET ? 'set' : 'MISSING'}`)
+    console.log(`ALLOWED_ORIGIN=${process.env.ALLOWED_ORIGIN ?? 'unset (CORS open)'}`)
+  })
 
   process.on('SIGTERM', () => shutdown('SIGTERM'))
   process.on('SIGINT', () => shutdown('SIGINT'))
 }
 
 let server: ReturnType<typeof app.listen>
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception', err)
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled rejection', reason)
+  process.exit(1)
+})
 
 void start()

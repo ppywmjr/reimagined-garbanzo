@@ -1,13 +1,22 @@
 {
   "$schema": "https://schema.railpack.com",
-  "secrets": ["DATABASE_URL", "CLERK_SECRET_KEY", "INTERNAL_API_SECRET"],
+  "secrets": [
+    "DATABASE_URL",
+    "CLERK_SECRET_KEY",
+    "INTERNAL_API_SECRET"
+  ],
   "steps": {
     "build": {
-      "secrets": ["*"],
-      "commands": ["npm run build:railpack"]
+      "secrets": [
+        "*"
+      ],
+      "commands": [
+        "npm run build:railpack"
+      ]
     }
   },
   "deploy": {
-    "startCommand": "npm start"
+    "startCommand": "npm start",
+    "healthcheckPath": "/health"
   }
 }
