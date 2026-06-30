@@ -7,6 +7,11 @@ const port = Number.isNaN(parsedPort) ? 3000 : parsedPort
 
 async function shutdown(signal: string): Promise<void> {
   console.log(`Received ${signal}, shutting down gracefully`)
+  // Force-kill after 10s if keep-alive connections prevent server.close() from completing
+  setTimeout(() => {
+    console.error('Shutdown timed out, forcing exit')
+    process.exit(1)
+  }, 10_000).unref()
   server.close(async () => {
     try {
       await disconnectPrisma()
