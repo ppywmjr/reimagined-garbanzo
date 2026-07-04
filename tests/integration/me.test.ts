@@ -16,7 +16,7 @@ beforeAll(async () => {
   container = await new PostgreSqlContainer('postgres:16').start();
   process.env.DATABASE_URL = container.getConnectionUri();
   execSync('npx prisma migrate deploy', {
-    env: { ...process.env, DATABASE_URL: container.getConnectionUri() },
+    env: { ...process.env, DATABASE_URL: container.getConnectionUri(), DIRECT_URL: container.getConnectionUri() },
   });
 
   // User matching the Clerk mock in tests/setup.ts
@@ -30,8 +30,8 @@ beforeAll(async () => {
 
   await getPrismaClient().video.createMany({
     data: [
-      { id: videoId1, title: 'Video One',   url: 'https://example.com/v1', thumbnail: 'https://example.com/v1.jpg' },
-      { id: videoId2, title: 'Video Two',   url: 'https://example.com/v2', thumbnail: 'https://example.com/v2.jpg' },
+      { id: videoId1, title: 'Video One', url: 'https://example.com/v1', thumbnail: 'https://example.com/v1.jpg' },
+      { id: videoId2, title: 'Video Two', url: 'https://example.com/v2', thumbnail: 'https://example.com/v2.jpg' },
       { id: videoId3, title: 'Video Three', url: 'https://example.com/v3', thumbnail: 'https://example.com/v3.jpg' },
     ],
   });
@@ -67,7 +67,7 @@ beforeAll(async () => {
   // videoId1: watched, videoId2: in-progress, videoId3: no entry (defaults to unwatched/0)
   await getPrismaClient().userVideoProgress.createMany({
     data: [
-      { userId: user.id, videoId: videoId1, watched: true,  progressSecs: 0   },
+      { userId: user.id, videoId: videoId1, watched: true, progressSecs: 0 },
       { userId: user.id, videoId: videoId2, watched: false, progressSecs: 120 },
     ],
   });
@@ -122,9 +122,9 @@ describe('GET /me/courses/:id/videos', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toMatchObject([
-      { id: videoId1, title: 'Video One',   watched: true,  progressSecs: 0   },
-      { id: videoId2, title: 'Video Two',   watched: false, progressSecs: 120 },
-      { id: videoId3, title: 'Video Three', watched: false, progressSecs: 0   },
+      { id: videoId1, title: 'Video One', watched: true, progressSecs: 0 },
+      { id: videoId2, title: 'Video Two', watched: false, progressSecs: 120 },
+      { id: videoId3, title: 'Video Three', watched: false, progressSecs: 0 },
     ]);
     expect(res.body.pagination).toMatchObject({
       total: 3,

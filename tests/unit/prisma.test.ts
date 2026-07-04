@@ -6,6 +6,10 @@ vi.mock('../../prisma/generated/client.js', () => ({
     })),
 }))
 
+vi.mock('@prisma/adapter-neon', () => ({
+    PrismaNeon: vi.fn(),
+}))
+
 vi.mock('@prisma/adapter-pg', () => ({
     PrismaPg: vi.fn(),
 }))
