@@ -10,7 +10,7 @@ beforeAll(async () => {
   container = await new PostgreSqlContainer('postgres:16').start();
   process.env.DATABASE_URL = container.getConnectionUri();
   execSync('npx prisma migrate deploy', {
-    env: { ...process.env, DATABASE_URL: container.getConnectionUri() },
+    env: { ...process.env, DATABASE_URL: container.getConnectionUri(), DIRECT_URL: container.getConnectionUri() },
   });
 }, 60_000);
 

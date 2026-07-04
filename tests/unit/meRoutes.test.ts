@@ -21,6 +21,18 @@ vi.mock('../../src/services/userVideoService.js', () => ({
     upsertVideoProgress: vi.fn(),
 }))
 
+vi.mock('../../src/services/userService.js', () => ({
+    getUserProfile: vi.fn(),
+}))
+
+vi.mock('../../src/services/planService.js', () => ({
+    getPlanById: vi.fn(),
+}))
+
+vi.mock('../../src/services/stripeService.js', () => ({
+    createCheckoutSession: vi.fn(),
+}))
+
 const COURSE_ID = '123e4567-e89b-12d3-a456-426614174000'
 const VIDEO_ID = '987fcdeb-51a2-43d6-be46-716614174001'
 
@@ -239,3 +251,4 @@ describe('POST /me/courses/:id/videos/:videoId/progress', () => {
         expect(res.body.data).toEqual(progress)
     })
 })
+
