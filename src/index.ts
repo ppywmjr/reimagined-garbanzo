@@ -26,7 +26,7 @@ async function shutdown(signal: string): Promise<void> {
 
 async function start(): Promise<void> {
   try {
-    await getPrismaClient().$connect()
+    await getPrismaClient().$queryRaw`SELECT 1`
     console.log('Database connection established')
   } catch (err) {
     console.error('Failed to connect to database', err)
