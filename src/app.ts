@@ -10,6 +10,8 @@ import { logger } from './middleware/logger.js'
 
 const app = express()
 
+app.use(logger)
+
 /* v8 ignore next 3 */
 if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'staging') {
   app.use(cors({
@@ -21,14 +23,12 @@ if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'staging'
 // Any raw-body route (e.g. Stripe webhook) must be registered here,
 // before express.json() and before internalApiKey.
 
-app.use(logger)
 app.use(express.json({ limit: '100kb' }))
 
 app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok' })
 })
 
-app.use(internalApiKey)
 app.use(planRoutes)
 app.use(clerkMiddleware())
 app.use(userRoutes)
