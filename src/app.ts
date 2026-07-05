@@ -12,7 +12,11 @@ const app = express()
 
 app.use(logger)
 
-/* v8 ignore next 3 */
+// CORS is only enforced in production. Set ALLOWED_ORIGIN to your frontend domain
+// (e.g. https://your-app.vercel.app). Omitting it allows all origins ('*') which
+// is safe here because all data routes are protected by internalApiKey + Clerk auth,
+// but setting it explicitly is recommended for production.
+/* v8 ignore next 5 */
 if (process.env.NODE_ENV !== 'development' && process.env.NODE_ENV !== 'staging') {
   app.use(cors({
     origin: process.env.ALLOWED_ORIGIN ?? '*',
@@ -29,6 +33,7 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok' })
 })
 
+app.use(internalApiKey)
 app.use(planRoutes)
 app.use(clerkMiddleware())
 app.use(userRoutes)
