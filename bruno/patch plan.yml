@@ -1,0 +1,23 @@
+info:
+  name: patch plan
+  type: http
+  seq: 10
+
+http:
+  method: PATCH
+  url: "{{reimagined-garbanzo-base-url}}/plans/{{planId}}"
+  headers:
+    - name: x-internal-api-key
+      value: "{{x-internal-api-key}}"
+    - name: Authorization
+      value: Bearer {{clerk_token}}
+  body:
+    type: json
+    data: '{"isActive": false}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

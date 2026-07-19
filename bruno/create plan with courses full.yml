@@ -1,0 +1,23 @@
+info:
+  name: create plan with courses full
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{reimagined-garbanzo-base-url}}/plans"
+  headers:
+    - name: x-internal-api-key
+      value: "{{x-internal-api-key}}"
+    - name: Authorization
+      value: Bearer {{clerk_token}}
+  body:
+    type: json
+    data: '{"name": "Pro Plan", "stripeProductId": "prod_pro_123", "stripePriceId": "price_pro_456", "billingInterval": "month", "pricePence": 0, "isActive": true, "courseIds": ["9fa8b01c-57f4-4868-87b8-681b30340f6a"]}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
