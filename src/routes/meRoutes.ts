@@ -4,7 +4,12 @@ import { getAuthWithBypass } from '../lib/auth-helper.js'
 import * as courseService from '../services/courseService.js'
 import * as userCoursesService from '../services/userCoursesService.js'
 import * as userVideoService from '../services/userVideoService.js'
+import * as userSubscriptionService from '../services/userSubscriptionService.js'
 import { paginationSchema } from '../lib/validate.js'
+
+const CreateSubscriptionBody = z.object({
+  activationCode: z.string().min(1),
+})
 
 const progressBodySchema = z
   .object({
@@ -74,6 +79,19 @@ router.get('/me/courses/:id/videos/:videoId', async (req, res) => {
     return res.status(404).json({ success: false, error: 'Video not found' })
   }
   res.json({ success: true, data: video })
+})
+
+router.post('/me/subscriptions', async (req, res) => {
+  const { userId } = getAuthWithBypass(req)
+  const parseBody = CreateSubscriptionBody.safeParse(req.body)
+  if (!parseBody.success) {
+    return res.status(400).json({ success: false, error: parseBody.error.issues[0].message })
+  }
+  const result = await userSubscriptionService.createUserSubscription(userId!, parseBody.data.activationCode)
+  if (!result.success) {
+    return res.status(400).json({ success: false, error: result.error })
+  }
+  res.status(201).json({ success: true, data: result.data })
 })
 
 router.post('/me/courses/:id/videos/:videoId/progress', async (req, res) => {

@@ -8,6 +8,37 @@ const courseSelect = {
   sortOrder: true,
 } as const
 
+export async function createCourse(data: {
+  title: string
+  description?: string
+  thumbnail?: string
+  sortOrder?: number
+  isPublished?: boolean
+}) {
+  return getPrismaClient().course.create({
+    data: {
+      title: data.title,
+      description: data.description ?? undefined,
+      thumbnail: data.thumbnail ?? undefined,
+      sortOrder: data.sortOrder ?? 0,
+      isPublished: data.isPublished ?? false,
+    },
+  })
+}
+
+export async function patchCourse(id: string, data: {
+  title?: string
+  description?: string
+  thumbnail?: string
+  sortOrder?: number
+  isPublished?: boolean
+}) {
+  return getPrismaClient().course.update({
+    where: { id },
+    data,
+  })
+}
+
 export function buildUserProgressInclude(clerkUserId: string | null) {
   return clerkUserId
     ? { where: { user: { clerkUserId } }, take: 1 as const }

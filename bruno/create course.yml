@@ -1,0 +1,23 @@
+info:
+  name: create course
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{reimagined-garbanzo-base-url}}/courses"
+  headers:
+    - name: x-internal-api-key
+      value: "{{x-internal-api-key}}"
+    - name: Authorization
+      value: Bearer {{clerk_token}}
+  body:
+    type: json
+    data: '{"title": "Heart", "description": "Heart summer intensive", "thumbnail": "https://example.com/thumbnail.jpg", "sortOrder": 1, "isPublished": true}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

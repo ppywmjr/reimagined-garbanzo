@@ -1,0 +1,23 @@
+info:
+  name: patch course
+  type: http
+  seq: 9
+
+http:
+  method: PATCH
+  url: "{{reimagined-garbanzo-base-url}}/courses/{{courseId}}"
+  headers:
+    - name: x-internal-api-key
+      value: "{{x-internal-api-key}}"
+    - name: Authorization
+      value: Bearer {{clerk_token}}
+  body:
+    type: json
+    data: '{"title": "Updated Course Title", "isPublished": true}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

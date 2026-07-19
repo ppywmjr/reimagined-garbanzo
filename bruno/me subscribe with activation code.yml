@@ -1,0 +1,23 @@
+info:
+  name: me subscribe with activation code
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{reimagined-garbanzo-base-url}}/me/subscriptions"
+  headers:
+    - name: x-internal-api-key
+      value: "{{x-internal-api-key}}"
+    - name: Authorization
+      value: Bearer {{clerk_token}}
+  body:
+    type: json
+    data: '{"activationCode": "{{activationCode}}"}'
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
