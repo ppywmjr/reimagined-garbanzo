@@ -10,3 +10,5 @@ variables:
     value: b3f4a2e1-0c5d-4f6e-8a7b-9c0d1e2f3a4b
   - secret: true
     name: clerk_token
+  - secret: true
+    name: activationCode

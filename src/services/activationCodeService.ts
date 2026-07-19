@@ -5,16 +5,24 @@ const ActivationCodeBody = z.object({
 })
 
 /**
- * Hardcoded valid activation codes.
- * Replace this with database lookups when ready.
+ * Parse valid activation codes from environment variable.
+ * Expected format: JSON object {"CODE": { "planId": "<uuid>" }, ...}
+ * Falls back to empty object if not set (for safety in tests/local dev).
  */
-const VALID_ACTIVATION_CODES: Record<string, { planId: string }> = {
-  'PLAN-A-2024': { planId: 'plan-a-id' },
-  'PLAN-B-2024': { planId: 'plan-b-id' },
-  'FREE-PLAN':   { planId: 'free-plan-id' },
+function getActivationCodesFromEnv(): Record<string, { planId: string }> {
+  const raw = process.env.VALID_ACTIVATION_CODES
+  if (!raw) {
+    return {}
+  }
+  try {
+    return JSON.parse(raw) as Record<string, { planId: string }>
+  } catch {
+    console.error('Invalid VALID_ACTIVATION_CODES JSON in environment variable')
+    return {}
+  }
 }
 
-export { ActivationCodeBody, VALID_ACTIVATION_CODES }
+export { ActivationCodeBody, getActivationCodesFromEnv }
 
 export interface ActivationCodeResult {
   planId: string
@@ -26,7 +34,8 @@ export interface ActivationCodeResult {
  */
 export async function validateActivationCode(activationCode: string): Promise<ActivationCodeResult | null> {
   const normalized = activationCode.trim().toUpperCase()
-  const entry = VALID_ACTIVATION_CODES[normalized]
+  const codes = getActivationCodesFromEnv()
+  const entry = codes[normalized]
   if (!entry) {
     return null
   }

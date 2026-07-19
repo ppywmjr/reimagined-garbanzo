@@ -39,9 +39,11 @@ export async function createUserSubscription(clerkUserId: string, activationCode
           },
         },
       },
-      planId: validated.planId,
+      plan: {
+        connect: { id: validated.planId },
+      },
       status: 'active',
-    } as any,
+    },
   })
 
   return { success: true, data: subscription } as const

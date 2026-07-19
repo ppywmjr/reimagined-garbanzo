@@ -13,7 +13,7 @@ http:
       value: Bearer {{clerk_token}}
   body:
     type: json
-    data: '{"activationCode": "PLAN-A-2024"}'
+    data: '{"activationCode": "{{activationCode}}"}'
   auth: inherit
 
 settings:
