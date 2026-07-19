@@ -29,7 +29,17 @@ export async function createPlan(data: {
 
 export async function getAllPlans(limit: number, offset: number) {
   const [plans, total] = await Promise.all([
-    getPrismaClient().plan.findMany({ take: limit, skip: offset }),
+    getPrismaClient().plan.findMany({
+      take: limit,
+      skip: offset,
+      include: {
+        planCourses: {
+          include: {
+            course: true,
+          },
+        },
+      },
+    }),
     getPrismaClient().plan.count(),
   ])
   return { plans, total }
