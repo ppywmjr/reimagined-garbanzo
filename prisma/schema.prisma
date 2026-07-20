@@ -60,6 +60,7 @@ model Plan {
   deactivatedAt   DateTime?       @map("deactivated_at") @db.Timestamptz
   subscriptions   Subscription[]
   planCourses     PlanCourse[]
+  activationCodes ActivationCode[]
 
   @@map("plans")
 }
@@ -145,6 +146,19 @@ model Subscription {
   @@index([userId])
   @@index([status])
   @@map("subscriptions")
+}
+
+model ActivationCode {
+  id         String   @id @default(uuid()) @db.Uuid
+  code       String   @unique @map("code")
+  planId     String   @map("plan_id") @db.Uuid
+  isActive   Boolean  @default(true) @map("is_active")
+  expiresAt  DateTime? @map("expires_at") @db.Timestamptz
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  plan       Plan     @relation(fields: [planId], references: [id])
+
+  @@index([code])
+  @@map("activation_codes")
 }
 
 model WebhookEvent {

@@ -18,6 +18,7 @@ async function main() {
   await prisma.courseVideo.deleteMany()
   await prisma.planCourse.deleteMany()
   await prisma.subscription.deleteMany()
+  await prisma.activationCode.deleteMany()
   await prisma.video.deleteMany()
   await prisma.course.deleteMany()
   await prisma.plan.deleteMany()
@@ -49,6 +50,15 @@ async function main() {
     data: { name: 'Safra', isFree: false, isActive: true, thumbnail: 'https://i.ytimg.com/vi/BMkwmQmUa_g/hqdefault.jpg' },
   })
   console.log(`Created plan with id: ${plan.id}`)
+
+  // Activation Codes
+  await prisma.activationCode.createMany({
+    data: [
+      { code: 'SAFRA-SIGIL-2026', planId: plan.id, isActive: true },
+      { code: 'PREMIUM456', planId: plan.id, isActive: true, expiresAt: new Date('2027-12-31T23:59:59Z') },
+    ],
+  })
+  console.log('Created activation codes')
 
   // Course
   const course = await prisma.course.create({
