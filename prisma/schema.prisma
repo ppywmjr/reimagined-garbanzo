@@ -55,6 +55,7 @@ model Plan {
   billingInterval BillingInterval? @map("billing_interval")
   pricePence      Int?            @map("price_pence")
   isActive        Boolean         @default(true) @map("is_active")
+  thumbnail       String?
   createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz
   deactivatedAt   DateTime?       @map("deactivated_at") @db.Timestamptz
   subscriptions   Subscription[]

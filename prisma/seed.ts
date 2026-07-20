@@ -46,13 +46,13 @@ async function main() {
 
   // Plan
   const plan = await prisma.plan.create({
-    data: { name: 'flutters-demo-plan', isFree: true, isActive: true },
+    data: { name: 'Safra', isFree: false, isActive: true, thumbnail: 'https://i.ytimg.com/vi/BMkwmQmUa_g/hqdefault.jpg' },
   })
   console.log(`Created plan with id: ${plan.id}`)
 
   // Course
   const course = await prisma.course.create({
-    data: { title: 'flutters-demo-course', isPublished: true },
+    data: { title: 'Safra', isPublished: true, description: 'Heart performance retreat 2026', thumbnail: 'https://i.ytimg.com/vi/BMkwmQmUa_g/hqdefault.jpg'},
   })
   console.log(`Created course with id: ${course.id}`)
 

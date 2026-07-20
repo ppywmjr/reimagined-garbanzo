@@ -9,6 +9,7 @@ export async function createPlan(data: {
   pricePence?: number
   isActive: boolean
   courseIds?: string[]
+  thumbnail?: string
 }) {
   return getPrismaClient().plan.create({
     data: {
@@ -18,6 +19,7 @@ export async function createPlan(data: {
       billingInterval: data.billingInterval ?? null,
       pricePence: data.pricePence ?? null,
       isActive: data.isActive,
+      thumbnail: data.thumbnail ?? null,
       planCourses: {
         createMany: {
           data: (data.courseIds ?? []).map((courseId) => ({ courseId })),
@@ -56,6 +58,7 @@ export async function patchPlan(id: string, data: {
   pricePence?: number
   stripeProductId?: string
   stripePriceId?: string
+  thumbnail?: string
 }) {
   return getPrismaClient().plan.update({
     where: { id },
