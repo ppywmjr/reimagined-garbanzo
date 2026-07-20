@@ -59,6 +59,7 @@ const planData = {
     pricePence: 999,
     isActive: true,
     courseIds: [],
+    thumbnail: 'https://example.com/thumb.jpg',
 }
 
 const storedPlan = { id: 'plan-uuid', ...planData }
@@ -70,9 +71,10 @@ const patchPlanData = {
     pricePence: 1999,
     stripeProductId: 'prod_updated',
     stripePriceId: 'price_updated',
+    thumbnail: 'https://example.com/thumb-updated.jpg',
 }
 
-const updatedPlan = { id: 'plan-uuid', name: 'Pro Updated', description: 'Updated description', isActive: false, pricePence: 1999, stripeProductId: 'prod_updated', stripePriceId: 'price_updated' }
+const updatedPlan = { id: 'plan-uuid', name: 'Pro Updated', description: 'Updated description', isActive: false, pricePence: 1999, stripeProductId: 'prod_updated', stripePriceId: 'price_updated', thumbnail: 'https://example.com/thumb-updated.jpg' }
 
 describe('createPlan', () => {
     it('creates and returns the plan', async () => {
@@ -88,6 +90,7 @@ describe('createPlan', () => {
                 billingInterval: planData.billingInterval ?? null,
                 pricePence: planData.pricePence ?? null,
                 isActive: planData.isActive,
+                thumbnail: planData.thumbnail ?? null,
                 planCourses: {
                     createMany: {
                         data: [],
@@ -116,6 +119,7 @@ describe('createPlan', () => {
                 billingInterval: null,
                 pricePence: null,
                 isActive: true,
+                thumbnail: null,
                 planCourses: {
                     createMany: {
                         data: [],
@@ -131,6 +135,7 @@ describe('createPlan', () => {
             name: 'Pro',
             isActive: true,
             courseIds: ['course-1', 'course-2'],
+            thumbnail: 'https://example.com/pro-thumb.jpg',
         }
         const createdPlan = { id: 'plan-3', ...dataWithCourses }
         mockCreate.mockResolvedValue(createdPlan)
@@ -145,6 +150,7 @@ describe('createPlan', () => {
                 billingInterval: null,
                 pricePence: null,
                 isActive: true,
+                thumbnail: dataWithCourses.thumbnail ?? null,
                 planCourses: {
                     createMany: {
                         data: [
@@ -166,6 +172,7 @@ describe('createPlan', () => {
             stripePriceId: undefined as any,
             billingInterval: undefined as any,
             pricePence: undefined as any,
+            thumbnail: undefined as any,
         }
         const createdPlan = { id: 'plan-4', name: 'Basic', isActive: true }
         mockCreate.mockResolvedValue(createdPlan)
@@ -180,6 +187,7 @@ describe('createPlan', () => {
                 billingInterval: null,
                 pricePence: null,
                 isActive: true,
+                thumbnail: null,
                 planCourses: {
                     createMany: {
                         data: [],
@@ -187,6 +195,36 @@ describe('createPlan', () => {
                 },
             },
         })
+    })
+
+    it('includes thumbnail when provided', async () => {
+        const dataWithThumbnail = {
+            name: 'Premium',
+            isActive: true,
+            thumbnail: 'https://example.com/premium-thumb.jpg',
+        }
+        const createdPlan = { id: 'plan-5', name: 'Premium', isActive: true, thumbnail: 'https://example.com/premium-thumb.jpg' }
+        mockCreate.mockResolvedValue(createdPlan)
+
+        const result = await createPlan(dataWithThumbnail as any)
+
+        expect(mockCreate).toHaveBeenCalledWith({
+            data: {
+                name: 'Premium',
+                stripeProductId: null,
+                stripePriceId: null,
+                billingInterval: null,
+                pricePence: null,
+                isActive: true,
+                thumbnail: 'https://example.com/premium-thumb.jpg',
+                planCourses: {
+                    createMany: {
+                        data: [],
+                    },
+                },
+            },
+        })
+        expect(result).toEqual(createdPlan)
     })
 })
 
@@ -201,6 +239,18 @@ describe('patchPlan', () => {
             data: patchPlanData,
         })
         expect(result).toEqual(updatedPlan)
+    })
+
+    it('updates only the thumbnail', async () => {
+        mockUpdate.mockResolvedValue({ id: 'plan-uuid', thumbnail: 'https://example.com/new-thumb.jpg' })
+
+        const result = await patchPlan('plan-uuid', { thumbnail: 'https://example.com/new-thumb.jpg' })
+
+        expect(mockUpdate).toHaveBeenCalledWith({
+            where: { id: 'plan-uuid' },
+            data: { thumbnail: 'https://example.com/new-thumb.jpg' },
+        })
+        expect(result).toEqual({ id: 'plan-uuid', thumbnail: 'https://example.com/new-thumb.jpg' })
     })
 
     it('updates only the provided fields', async () => {
