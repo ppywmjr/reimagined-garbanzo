@@ -5,7 +5,7 @@ info:
 
 http:
   method: PATCH
-  url: "{{reimagined-garbanzo-base-url}}/courses/{{courseId}}"
+  url: "{{reimagined-garbanzo-base-url}}/courses/6c57b8c3-d955-4952-9c9e-ebdad1fca67d"
   headers:
     - name: x-internal-api-key
       value: "{{x-internal-api-key}}"
@@ -13,7 +13,11 @@ http:
       value: Bearer {{clerk_token}}
   body:
     type: json
-    data: '{"title": "Updated Course Title", "isPublished": true}'
+    data: |-
+      {
+        "title": "Demo course",
+        "description": "With a subtext"
+      }
   auth: inherit
 
 settings:
