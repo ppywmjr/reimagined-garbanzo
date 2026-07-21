@@ -21,9 +21,9 @@ beforeAll(async () => {
 
   await getPrismaClient().video.createMany({
     data: [
-      { id: 'v1', title: 'Video One', url: 'https://example.com/v1', thumbnail: 'https://example.com/v1.jpg' },
-      { id: 'v2', title: 'Video Two', url: 'https://example.com/v2', thumbnail: 'https://example.com/v2.jpg' },
-      { id: 'v3', title: 'Video Three', url: 'https://example.com/v3', thumbnail: 'https://example.com/v3.jpg' },
+      { id: '550e8400-e29b-41d4-a716-446655440001', title: 'Video One', url: 'https://example.com/v1', thumbnail: 'https://example.com/v1.jpg' },
+      { id: '550e8400-e29b-41d4-a716-446655440002', title: 'Video Two', url: 'https://example.com/v2', thumbnail: 'https://example.com/v2.jpg' },
+      { id: '550e8400-e29b-41d4-a716-446655440003', title: 'Video Three', url: 'https://example.com/v3', thumbnail: 'https://example.com/v3.jpg' },
     ],
   });
 
@@ -32,21 +32,21 @@ beforeAll(async () => {
   });
   courseId = course.id;
 
-  await getPrismaClient().courseVideo.createMany({
-    data: [
-      { courseId, videoId: 'v1', position: 1 },
-      { courseId, videoId: 'v2', position: 2 },
-      { courseId, videoId: 'v3', position: 3 },
-    ],
-  });
+   await getPrismaClient().courseVideo.createMany({
+     data: [
+       { courseId, videoId: '550e8400-e29b-41d4-a716-446655440001', position: 1 },
+       { courseId, videoId: '550e8400-e29b-41d4-a716-446655440002', position: 2 },
+       { courseId, videoId: '550e8400-e29b-41d4-a716-446655440003', position: 3 },
+     ],
+   });
 
-  // v1: watched, v2: in-progress, v3: no entry (defaults to unwatched/0)
-  await getPrismaClient().userVideoProgress.createMany({
-    data: [
-      { userId: videoUser.id, videoId: 'v1', watched: true, progressSecs: 0 },
-      { userId: videoUser.id, videoId: 'v2', watched: false, progressSecs: 120 },
-    ],
-  });
+   // 550e8400-e29b-41d4-a716-446655440001: watched, 550e8400-e29b-41d4-a716-446655440002: in-progress, 550e8400-e29b-41d4-a716-446655440003: no entry (defaults to unwatched/0)
+   await getPrismaClient().userVideoProgress.createMany({
+     data: [
+       { userId: videoUser.id, videoId: '550e8400-e29b-41d4-a716-446655440001', watched: true, progressSecs: 0 },
+       { userId: videoUser.id, videoId: '550e8400-e29b-41d4-a716-446655440002', watched: false, progressSecs: 120 },
+     ],
+   });
 }, 60_000);
 
 afterAll(async () => {
@@ -142,9 +142,9 @@ describe('GET /courses/:id/videos', () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toMatchObject([
-      { id: 'v1', title: 'Video One', url: 'https://example.com/v1', thumbnail: 'https://example.com/v1.jpg', watched: true, progressSecs: 0 },
-      { id: 'v2', title: 'Video Two', url: 'https://example.com/v2', thumbnail: 'https://example.com/v2.jpg', watched: false, progressSecs: 120 },
-      { id: 'v3', title: 'Video Three', url: 'https://example.com/v3', thumbnail: 'https://example.com/v3.jpg', watched: false, progressSecs: 0 },
+      { id: '550e8400-e29b-41d4-a716-446655440001', title: 'Video One', url: 'https://example.com/v1', thumbnail: 'https://example.com/v1.jpg', watched: true, progressSecs: 0 },
+      { id: '550e8400-e29b-41d4-a716-446655440002', title: 'Video Two', url: 'https://example.com/v2', thumbnail: 'https://example.com/v2.jpg', watched: false, progressSecs: 120 },
+      { id: '550e8400-e29b-41d4-a716-446655440003', title: 'Video Three', url: 'https://example.com/v3', thumbnail: 'https://example.com/v3.jpg', watched: false, progressSecs: 0 },
     ]);
     expect(res.body.pagination).toMatchObject({
       total: 3,
@@ -159,7 +159,7 @@ describe('GET /courses/:id/videos', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data).toMatchObject([
-      { id: 'v2', watched: false, progressSecs: 120 },
+      { id: '550e8400-e29b-41d4-a716-446655440002', watched: false, progressSecs: 120 },
     ]);
     expect(res.body.pagination).toMatchObject({
       total: 3,
