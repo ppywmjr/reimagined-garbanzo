@@ -21,6 +21,7 @@ const planData = {
     billingInterval: 'month' as const,
     pricePence: 999,
     isActive: true,
+    thumbnail: 'https://example.com/thumb.jpg',
 }
 
 const storedPlan = { id: 'plan-uuid', ...planData }
@@ -165,6 +166,32 @@ describe('POST /plans', () => {
         })
 
         expect(res.status).toBe(201)
+    })
+
+    it('accepts thumbnail in request body', async () => {
+        const createdPlan = { id: 'plan-uuid', name: 'Thumbnail Plan', thumbnail: 'https://example.com/thumb.jpg' }
+        vi.mocked(planService.createPlan).mockResolvedValue(createdPlan as any)
+
+        const res = await request(app).post('/plans').send({
+            name: 'Thumbnail Plan',
+            thumbnail: 'https://example.com/thumb.jpg',
+        })
+
+        expect(res.status).toBe(201)
+        expect(res.body.success).toBe(true)
+        expect(res.body.data.thumbnail).toBe('https://example.com/thumb.jpg')
+    })
+
+    it('accepts plan without thumbnail', async () => {
+        const createdPlan = { id: 'plan-uuid', name: 'No Thumbnail Plan' }
+        vi.mocked(planService.createPlan).mockResolvedValue(createdPlan as any)
+
+        const res = await request(app).post('/plans').send({
+            name: 'No Thumbnail Plan',
+        })
+
+        expect(res.status).toBe(201)
+        expect(res.body.success).toBe(true)
     })
 })
 
@@ -417,6 +444,33 @@ describe('PATCH /plans/:id', () => {
         const res = await request(app).patch('/plans/%40%23%24').send({ name: 'Test' })
 
         expect(res.status).toBe(400)
+    })
+
+    it('accepts thumbnail update', async () => {
+        const updatedPlan = { id: PLAN_ID, thumbnail: 'https://example.com/new-thumb.jpg' }
+        vi.mocked(planService.patchPlan).mockResolvedValue(updatedPlan as any)
+
+        const res = await request(app).patch(`/plans/${PLAN_ID}`).send({
+            thumbnail: 'https://example.com/new-thumb.jpg',
+        })
+
+        expect(res.status).toBe(200)
+        expect(res.body.success).toBe(true)
+        expect(res.body.data.thumbnail).toBe('https://example.com/new-thumb.jpg')
+    })
+
+    it('accepts thumbnail with other fields', async () => {
+        const updatedPlan = { id: PLAN_ID, name: 'Updated Plan', thumbnail: 'https://example.com/updated-thumb.jpg' }
+        vi.mocked(planService.patchPlan).mockResolvedValue(updatedPlan as any)
+
+        const res = await request(app).patch(`/plans/${PLAN_ID}`).send({
+            name: 'Updated Plan',
+            thumbnail: 'https://example.com/updated-thumb.jpg',
+        })
+
+        expect(res.status).toBe(200)
+        expect(res.body.success).toBe(true)
+        expect(res.body.data.thumbnail).toBe('https://example.com/updated-thumb.jpg')
     })
 })
 

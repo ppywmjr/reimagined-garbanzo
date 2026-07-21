@@ -5,7 +5,7 @@ info:
 
 http:
   method: GET
-  url: "{{reimagined-garbanzo-base-url}}/courses/408408c9-5b1e-46fd-a4e6-108b83ab1dcc"
+  url: "{{reimagined-garbanzo-base-url}}/courses/6c57b8c3-d955-4952-9c9e-ebdad1fca67d"
   headers:
     - name: x-internal-api-key
       value: "{{x-internal-api-key}}"

@@ -11,6 +11,7 @@ const CreatePlanBody = z.object({
   pricePence: z.number().int().nonnegative().optional(),
   isActive: z.boolean().default(true),
   courseIds: z.array(z.string().uuid()).optional(),
+  thumbnail: z.string().optional(),
 })
 
 const PatchPlanBody = z.object({
@@ -20,6 +21,7 @@ const PatchPlanBody = z.object({
   pricePence: z.number().int().nonnegative().optional(),
   stripeProductId: z.string().min(1).optional(),
   stripePriceId: z.string().min(1).optional(),
+  thumbnail: z.string().optional(),
 })
 
 const AddCourseBody = z.object({
