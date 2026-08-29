@@ -3,6 +3,7 @@ import { z } from 'zod'
 import * as courseService from '../services/courseService.js'
 import { paginationSchema } from '../lib/validate.js'
 import { getAuthWithBypass } from '../lib/auth-helper.js'
+import { requireSuperAdmin } from '../middleware/requireSuperAdmin.js'
 
 const CreateCourseBody = z.object({
   title: z.string().min(1).max(200),
@@ -22,7 +23,7 @@ const PatchCourseBody = z.object({
 
 const router = Router()
 
-router.post('/courses', async (req, res) => {
+router.post('/courses', requireSuperAdmin, async (req, res) => {
   const parse = CreateCourseBody.safeParse(req.body)
   if (!parse.success) {
     return res.status(400).json({ success: false, error: parse.error.issues[0].message })
@@ -66,7 +67,7 @@ router.get('/courses/:id', async (req, res) => {
   res.json({ success: true, data: course })
 })
 
-router.patch('/courses/:id', async (req, res) => {
+router.patch('/courses/:id', requireSuperAdmin, async (req, res) => {
   const parseId = z.uuid().safeParse(req.params.id)
   if (!parseId.success) {
     return res.status(400).json({ success: false, error: 'Invalid course ID format' })
