@@ -22,6 +22,7 @@ erDiagram
         string email UK
         string display_name
         string stripe_customer_id
+        boolean super_admin
         timestamp created_at
         timestamp updated_at
     }
@@ -118,6 +119,7 @@ Represents a user in the system, linked to Clerk authentication.
 | `email` | String | User's email, unique |
 | `display_name` | String? | Optional display name |
 | `stripe_customer_id` | String? | Stripe customer reference |
+| `super_admin` | Boolean | Super admin flag (default: false) |
 | `created_at` | DateTime | Creation timestamp (timestamptz) |
 | `updated_at` | DateTime | Last update timestamp (timestamptz) |
 

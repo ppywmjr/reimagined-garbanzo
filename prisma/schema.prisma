@@ -34,6 +34,7 @@ model User {
   email            String         @unique
   displayName      String?        @map("display_name")
   stripeCustomerId String?        @map("stripe_customer_id")
+  superAdmin       Boolean        @default(false) @map("super_admin")
   createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime       @updatedAt @map("updated_at") @db.Timestamptz
   subscriptions    Subscription[]
