@@ -18,11 +18,75 @@ vi.mock('@clerk/express', () => ({
     clerkMiddleware: vi.fn(() => async (_req: any, res: any, next: any) => next()),
 }))
 
+vi.mock('../../src/lib/prisma.js', () => ({
+    getPrismaClient: vi.fn(() => ({
+        user: {
+            findUnique: vi.fn(),
+        },
+    })),
+}))
+
 const { getAuth } = await import('@clerk/express')
+const { getPrismaClient } = await import('../../src/lib/prisma.js')
 
 const COURSE_ID = '123e4567-e89b-12d3-a456-426614174000'
 
 describe('POST /courses', () => {
+    beforeEach(() => {
+        vi.mocked(getAuth).mockReturnValue({ userId: 'user_test_clerk_123', isAuthenticated: true } as any)
+        vi.mocked(getPrismaClient).mockReturnValue({
+            user: {
+                findUnique: vi.fn().mockResolvedValue({ superAdmin: true }),
+            },
+        } as any)
+    })
+
+    it('returns 401 when the request is not authenticated', async () => {
+        vi.mocked(getAuth).mockReturnValueOnce({ userId: null, isAuthenticated: false } as any)
+
+        const res = await request(app).post('/courses').send({
+            title: 'New Course',
+        })
+
+        expect(res.status).toBe(401)
+        expect(res.body.success).toBe(false)
+        expect(res.body.error).toBe('Unauthorized')
+    })
+
+    it('returns 403 when the user is not a super admin', async () => {
+        vi.mocked(getAuth).mockReturnValueOnce({ userId: 'user_test_clerk_123', isAuthenticated: true } as any)
+        vi.mocked(getPrismaClient).mockReturnValueOnce({
+            user: {
+                findUnique: vi.fn().mockResolvedValue({ superAdmin: false }),
+            },
+        } as any)
+
+        const res = await request(app).post('/courses').send({
+            title: 'New Course',
+        })
+
+        expect(res.status).toBe(403)
+        expect(res.body.success).toBe(false)
+        expect(res.body.error).toBe('Forbidden')
+    })
+
+    it('returns 403 when the user does not exist in the database', async () => {
+        vi.mocked(getAuth).mockReturnValueOnce({ userId: 'user_test_clerk_123', isAuthenticated: true } as any)
+        vi.mocked(getPrismaClient).mockReturnValueOnce({
+            user: {
+                findUnique: vi.fn().mockResolvedValue(null),
+            },
+        } as any)
+
+        const res = await request(app).post('/courses').send({
+            title: 'New Course',
+        })
+
+        expect(res.status).toBe(403)
+        expect(res.body.success).toBe(false)
+        expect(res.body.error).toBe('Forbidden')
+    })
+
     it('creates a course and returns 201 on success', async () => {
         const createdCourse = { id: 'course-uuid', title: 'New Course', description: 'Desc', thumbnail: null, sortOrder: 0, isPublished: false }
         vi.mocked(courseService.createCourse).mockResolvedValue(createdCourse as any)
@@ -380,6 +444,55 @@ describe('GET /courses/:id/videos', () => {
 })
 
 describe('PATCH /courses/:id', () => {
+    beforeEach(() => {
+        vi.mocked(getAuth).mockReturnValue({ userId: 'user_test_clerk_123', isAuthenticated: true } as any)
+        vi.mocked(getPrismaClient).mockReturnValue({
+            user: {
+                findUnique: vi.fn().mockResolvedValue({ superAdmin: true }),
+            },
+        } as any)
+    })
+
+    it('returns 401 when the request is not authenticated', async () => {
+        vi.mocked(getAuth).mockReturnValueOnce({ userId: null, isAuthenticated: false } as any)
+
+        const res = await request(app).patch(`/courses/${COURSE_ID}`).send({ title: 'Updated' })
+
+        expect(res.status).toBe(401)
+        expect(res.body.success).toBe(false)
+        expect(res.body.error).toBe('Unauthorized')
+    })
+
+    it('returns 403 when the user is not a super admin', async () => {
+        vi.mocked(getAuth).mockReturnValueOnce({ userId: 'user_test_clerk_123', isAuthenticated: true } as any)
+        vi.mocked(getPrismaClient).mockReturnValueOnce({
+            user: {
+                findUnique: vi.fn().mockResolvedValue({ superAdmin: false }),
+            },
+        } as any)
+
+        const res = await request(app).patch(`/courses/${COURSE_ID}`).send({ title: 'Updated' })
+
+        expect(res.status).toBe(403)
+        expect(res.body.success).toBe(false)
+        expect(res.body.error).toBe('Forbidden')
+    })
+
+    it('returns 403 when the user does not exist in the database', async () => {
+        vi.mocked(getAuth).mockReturnValueOnce({ userId: 'user_test_clerk_123', isAuthenticated: true } as any)
+        vi.mocked(getPrismaClient).mockReturnValueOnce({
+            user: {
+                findUnique: vi.fn().mockResolvedValue(null),
+            },
+        } as any)
+
+        const res = await request(app).patch(`/courses/${COURSE_ID}`).send({ title: 'Updated' })
+
+        expect(res.status).toBe(403)
+        expect(res.body.success).toBe(false)
+        expect(res.body.error).toBe('Forbidden')
+    })
+
     it('patches a course and returns the updated course', async () => {
         const updatedCourse = { id: COURSE_ID, title: 'Updated Course', description: 'New desc', thumbnail: null, sortOrder: 0, isPublished: false }
         vi.mocked(courseService.patchCourse).mockResolvedValue(updatedCourse as any)
